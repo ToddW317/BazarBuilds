@@ -5,6 +5,7 @@ export interface Card {
   size: 'Small' | 'Medium' | 'Large';
   tier: 'Bronze' | 'Silver' | 'Gold' | string;
   isLegendary: boolean;
+  castTime?: number;
   stats?: {
     damage?: number;
     heal?: number;

@@ -13,6 +13,7 @@ const cards: Card[] = data.map((row: any) => ({
   size: row.CardSize,
   tier: row.Tier,
   isLegendary: row.IsLegendary === 'TRUE',
+  castTime: row.CastTime > 0 ? row.CastTime : undefined,
   stats: {
     damage: row.Dps > 0 ? row.Dps : undefined,
     heal: row.Hps > 0 ? row.Hps : undefined,

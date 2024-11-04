@@ -153,7 +153,12 @@ export default function CardsPage() {
                     </span>
                   </div>
                 </div>
-                <p className="text-sm text-gray-400 mt-2">Type: {card.cardType}</p>
+                <div className="flex justify-between items-center mt-2">
+                  <p className="text-sm text-gray-400">Type: {card.cardType}</p>
+                  {card.castTime && (
+                    <p className="text-sm text-blue-400">Cast Time: {card.castTime}s</p>
+                  )}
+                </div>
               </div>
 
               {/* Card Body */}
