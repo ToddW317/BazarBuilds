@@ -29,6 +29,7 @@ export interface Build {
     count: number
     total: number
   }
+  views: number
 }
 
 export interface BuildFormData {
@@ -50,6 +51,7 @@ export interface Comment {
   likes: number
   likedBy: string[]
   parentId?: string | null
+  replies?: Comment[]
 }
 
 export interface Rating {
@@ -80,4 +82,27 @@ export interface Notification {
     buildTitle?: string;
     rating?: number;
   };
+}
+
+export type BuildSortOption = 'newest' | 'popular' | 'mostViewed' | 'topRated'
+
+export interface UserStats {
+  buildsCreated: number
+  buildsLiked: number
+  commentsCount: number
+  totalViews: number
+  mostViewedBuild: {
+    buildId: string
+    title: string
+    views: number
+  } | null
+  likes: {
+    totalLikes: number
+    buildLikes: number
+    commentLikes: number
+  }
+  topBuilds: {
+    byViews: Build[]
+    byLikes: Build[]
+  }
 } 

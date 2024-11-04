@@ -1,12 +1,48 @@
+'use client'
+
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { getBuilds } from '@/lib/buildService'
-import { Suspense } from 'react'
+import { Build, BuildSortOption } from '@/types/types'
 import BuildsGrid from '@/components/BuildsGrid'
+import BuildsFilter from '@/components/BuildsFilter'
 import BuildsNavigation from '@/components/BuildsNavigation'
 
-export default async function BuildsPage() {
-  const builds = await getBuilds()
-  
+export default function BuildsPage() {
+  const [builds, setBuilds] = useState<Build[]>([])
+  const [filteredBuilds, setFilteredBuilds] = useState<Build[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+
+  const loadBuilds = async (sortBy: BuildSortOption = 'newest') => {
+    setIsLoading(true)
+    const newBuilds = await getBuilds(sortBy)
+    setBuilds(newBuilds)
+    setFilteredBuilds(newBuilds)
+    setIsLoading(false)
+  }
+
+  useEffect(() => {
+    loadBuilds()
+  }, [])
+
+  const handleSortChange = (sortBy: BuildSortOption) => {
+    loadBuilds(sortBy)
+  }
+
+  const handleTagSearch = (tag: string) => {
+    if (!tag) {
+      setFilteredBuilds(builds)
+      return
+    }
+    
+    const filtered = builds.filter(build => 
+      build.tags?.some(buildTag => 
+        buildTag.toLowerCase().includes(tag.toLowerCase())
+      )
+    )
+    setFilteredBuilds(filtered)
+  }
+
   return (
     <div className="max-w-7xl mx-auto p-6">
       <div className="flex flex-col md:flex-row justify-between items-center mb-8">
@@ -24,10 +60,19 @@ export default async function BuildsPage() {
       </div>
 
       <BuildsNavigation />
+      
+      <BuildsFilter 
+        onSortChange={handleSortChange}
+        onTagSearch={handleTagSearch}
+      />
 
-      <Suspense fallback={<div>Loading builds...</div>}>
-        <BuildsGrid initialBuilds={builds} />
-      </Suspense>
+      {isLoading ? (
+        <div className="text-center py-12">
+          <p className="text-gray-400">Loading builds...</p>
+        </div>
+      ) : (
+        <BuildsGrid initialBuilds={filteredBuilds} />
+      )}
     </div>
   )
 } 

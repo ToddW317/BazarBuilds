@@ -1,4 +1,4 @@
-import { getBuildById } from '@/lib/buildService'
+import { getBuildById, incrementBuildViews } from '@/lib/buildService'
 import { notFound } from 'next/navigation'
 import BuildDetailsContent from '@/components/BuildDetailsContent'
 import { use } from 'react'
@@ -15,6 +15,15 @@ export default function BuildDetailsPage({ params }: BuildDetailsPageProps) {
 
   if (!build) {
     notFound()
+  }
+
+  // Increment view count when the page is loaded
+  // We use a client-side approach to avoid double-counting during SSR
+  if (typeof window !== 'undefined') {
+    // Use setTimeout to ensure this runs after the component mounts
+    setTimeout(() => {
+      incrementBuildViews(id)
+    }, 0)
   }
 
   return <BuildDetailsContent build={build} buildId={id} />

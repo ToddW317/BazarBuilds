@@ -87,12 +87,35 @@ export async function createBuild(
   }
 }
 
-export async function getBuilds(): Promise<Build[]> {
+export async function getBuilds(sortBy: BuildSortOption = 'newest'): Promise<Build[]> {
   try {
-    const buildsQuery = query(
-      collection(db, 'builds'),
-      orderBy('createdAt', 'desc')
-    );
+    let buildsQuery;
+
+    switch (sortBy) {
+      case 'popular':
+        buildsQuery = query(
+          collection(db, 'builds'),
+          orderBy('likes', 'desc')
+        );
+        break;
+      case 'mostViewed':
+        buildsQuery = query(
+          collection(db, 'builds'),
+          orderBy('views', 'desc')
+        );
+        break;
+      case 'topRated':
+        buildsQuery = query(
+          collection(db, 'builds'),
+          orderBy('rating.average', 'desc')
+        );
+        break;
+      default: // 'newest'
+        buildsQuery = query(
+          collection(db, 'builds'),
+          orderBy('createdAt', 'desc')
+        );
+    }
 
     const snapshot = await getDocs(buildsQuery);
     
@@ -108,10 +131,10 @@ export async function getBuilds(): Promise<Build[]> {
         ...data,
         createdAt: data.createdAt ? (data.createdAt as Timestamp).toDate() : new Date(),
         updatedAt: data.updatedAt ? (data.updatedAt as Timestamp).toDate() : new Date(),
+        views: data.views || 0
       } as Build;
     });
 
-    console.log(`Found ${builds.length} builds`);
     return builds;
   } catch (error) {
     console.error('Error fetching builds:', error);
@@ -299,5 +322,64 @@ export async function updateBuildRating(buildId: string, userId: string, score: 
   } catch (error) {
     console.error('Error updating rating:', error)
     throw error
+  }
+}
+
+// Add function to increment view count
+export async function incrementBuildViews(buildId: string) {
+  const buildRef = doc(db, 'builds', buildId)
+  
+  try {
+    // Check if this build was viewed recently by this browser
+    const viewKey = `build_view_${buildId}`
+    const lastView = localStorage.getItem(viewKey)
+    const now = Date.now()
+
+    // Only count a view if it's been more than 30 minutes since the last view
+    // or if there's no previous view record
+    if (!lastView || now - parseInt(lastView) > 30 * 60 * 1000) {
+      // Update the view count
+      await updateDoc(buildRef, {
+        views: increment(1)
+      })
+      
+      // Store the timestamp of this view
+      localStorage.setItem(viewKey, now.toString())
+
+      // Get the updated build data to verify the change
+      const updatedBuild = await getDoc(buildRef)
+      console.log('Updated view count:', updatedBuild.data()?.views)
+    }
+  } catch (error) {
+    console.error('Error incrementing views:', error)
+  }
+}
+
+// Add function to get user's top builds
+export async function getUserTopBuilds(userId: string): Promise<{
+  byViews: Build[]
+  byLikes: Build[]
+}> {
+  try {
+    const userBuildsQuery = query(
+      collection(db, 'builds'),
+      where('userId', '==', userId)
+    );
+
+    const snapshot = await getDocs(userBuildsQuery);
+    const builds = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data(),
+      createdAt: (doc.data().createdAt as Timestamp).toDate(),
+      updatedAt: (doc.data().updatedAt as Timestamp).toDate(),
+    } as Build));
+
+    const byViews = [...builds].sort((a, b) => (b.views || 0) - (a.views || 0)).slice(0, 5);
+    const byLikes = [...builds].sort((a, b) => b.likes - a.likes).slice(0, 5);
+
+    return { byViews, byLikes };
+  } catch (error) {
+    console.error('Error fetching top builds:', error);
+    return { byViews: [], byLikes: [] };
   }
 }
