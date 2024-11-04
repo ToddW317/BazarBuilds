@@ -37,7 +37,7 @@ export default function BuildDetailsContent({ build, buildId }: BuildDetailsCont
   }
 
   return (
-    <div className="max-w-6xl mx-auto p-6">
+    <div className="max-w-6xl mx-auto p-4 md:p-6">
       <Link 
         href="/builds"
         className="inline-flex items-center text-blue-400 hover:text-blue-300 mb-6"
@@ -46,27 +46,29 @@ export default function BuildDetailsContent({ build, buildId }: BuildDetailsCont
       </Link>
 
       <div className="bg-gray-800 rounded-lg shadow-lg overflow-hidden border border-gray-700">
-        {/* Hero Section */}
-        <div className="bg-gray-900 p-8">
-          <div className="flex justify-between items-start">
+        {/* Hero Section - Updated for mobile */}
+        <div className="bg-gray-900 p-4 md:p-8">
+          <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-4">
             <div>
-              <h1 className="text-3xl font-bold mb-4 text-white">{build.title}</h1>
-              <div className="flex items-center gap-4 text-gray-300">
+              <h1 className="text-2xl md:text-3xl font-bold mb-4 text-white">{build.title}</h1>
+              <div className="flex flex-wrap gap-3 text-gray-300">
                 <div className="flex items-center">
                   <span className="font-medium">Hero:</span>
                   <span className="ml-2">{hero?.name}</span>
                 </div>
+                <div className="hidden md:block">•</div>
                 <div className="flex items-center">
                   <span className="font-medium">Build Type:</span>
                   <span className="ml-2">{build.buildType}</span>
                 </div>
+                <div className="hidden md:block">•</div>
                 <div className="flex items-center">
                   <span className="font-medium">Difficulty:</span>
                   <span className="ml-2">{build.difficulty}</span>
                 </div>
               </div>
             </div>
-            <div className="text-right">
+            <div className="md:text-right">
               <BuildRating 
                 buildId={buildId}
                 initialRating={{
@@ -78,10 +80,10 @@ export default function BuildDetailsContent({ build, buildId }: BuildDetailsCont
           </div>
         </div>
 
-        {/* Screenshots Gallery */}
-        <div className="p-8 border-t border-gray-700">
-          <h2 className="text-2xl font-bold mb-4 text-white">Screenshots</h2>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+        {/* Screenshots Gallery - Updated grid for mobile */}
+        <div className="p-4 md:p-8 border-t border-gray-700">
+          <h2 className="text-xl md:text-2xl font-bold mb-4 text-white">Screenshots</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
             {build.screenshots.map((screenshot, index) => (
               <div 
                 key={index} 
@@ -94,7 +96,7 @@ export default function BuildDetailsContent({ build, buildId }: BuildDetailsCont
                   alt={`Screenshot ${index + 1}`}
                   fill
                   priority={index === 0}
-                  sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
+                  sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, 33vw"
                   className="object-cover"
                 />
               </div>
@@ -111,15 +113,15 @@ export default function BuildDetailsContent({ build, buildId }: BuildDetailsCont
           />
         )}
 
-        {/* Video Clip */}
+        {/* Video Clip - Responsive container */}
         {build.videoClip && (
-          <div className="p-8 border-t border-gray-700">
-            <h2 className="text-2xl font-bold mb-4 text-white">Gameplay Clip</h2>
+          <div className="p-4 md:p-8 border-t border-gray-700">
+            <h2 className="text-xl md:text-2xl font-bold mb-4 text-white">Gameplay Clip</h2>
             <div className="relative aspect-video rounded-lg overflow-hidden bg-gray-900">
               <video
                 src={build.videoClip}
                 controls
-                className="w-full"
+                className="w-full h-full"
                 poster={build.screenshots[0]}
               >
                 Your browser does not support the video tag.
@@ -128,15 +130,15 @@ export default function BuildDetailsContent({ build, buildId }: BuildDetailsCont
           </div>
         )}
 
-        {/* Description */}
-        <div className="p-8 border-t border-gray-700">
-          <h2 className="text-2xl font-bold mb-4 text-white">Build Description</h2>
+        {/* Description - Adjusted padding */}
+        <div className="p-4 md:p-8 border-t border-gray-700">
+          <h2 className="text-xl md:text-2xl font-bold mb-4 text-white">Build Description</h2>
           <p className="text-gray-300 whitespace-pre-wrap">{build.description}</p>
         </div>
 
-        {/* Tags */}
+        {/* Tags - Responsive layout */}
         {build.tags && build.tags.length > 0 && (
-          <div className="px-8 pb-4">
+          <div className="px-4 md:px-8 pb-4">
             <div className="flex flex-wrap gap-2">
               {build.tags.map((tag, index) => (
                 <span 
@@ -150,10 +152,10 @@ export default function BuildDetailsContent({ build, buildId }: BuildDetailsCont
           </div>
         )}
 
-        {/* Metadata */}
-        <div className="bg-gray-900 p-8 border-t border-gray-700">
-          <div className="flex items-center justify-between text-sm text-gray-400">
-            <div className="flex items-center space-x-4">
+        {/* Metadata - Mobile-friendly layout */}
+        <div className="bg-gray-900 p-4 md:p-8 border-t border-gray-700">
+          <div className="flex flex-col sm:flex-row justify-between gap-4 text-sm text-gray-400">
+            <div className="flex flex-wrap items-center gap-4">
               <button
                 onClick={handleLike}
                 className={`flex items-center space-x-1 ${
@@ -163,7 +165,7 @@ export default function BuildDetailsContent({ build, buildId }: BuildDetailsCont
                 <span>{isLiked ? '❤️' : '🤍'}</span>
                 <span>{likeCount} likes</span>
               </button>
-              <div className="flex items-center space-x-2 text-gray-400">
+              <div className="flex items-center space-x-2">
                 <svg 
                   className="w-5 h-5" 
                   fill="none" 
@@ -185,17 +187,17 @@ export default function BuildDetailsContent({ build, buildId }: BuildDetailsCont
                 </svg>
                 <span>{build.views || 0} views</span>
               </div>
-              <span>•</span>
+              <div className="hidden sm:block">•</div>
               <span>Created by {build.creatorName || 'Anonymous User'}</span>
             </div>
-            <div>
+            <div className="text-sm">
               Posted on {build.createdAt.toLocaleDateString()}
             </div>
           </div>
         </div>
 
-        {/* Comments Section */}
-        <div className="mt-8 bg-gray-800 rounded-lg p-8 border border-gray-700">
+        {/* Comments Section - Adjusted padding */}
+        <div className="mt-4 md:mt-8 bg-gray-800 rounded-lg p-4 md:p-8 border border-gray-700">
           <CommentErrorBoundary>
             <CommentSection buildId={buildId} />
           </CommentErrorBoundary>

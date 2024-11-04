@@ -5,42 +5,108 @@ import Link from 'next/link'
 import { getBuilds } from '@/lib/buildService'
 import { Build, BuildSortOption } from '@/types/types'
 import BuildsGrid from '@/components/BuildsGrid'
-import BuildsFilter from '@/components/BuildsFilter'
+import BuildsFilterSidebar from '@/components/BuildsFilterSidebar'
 import BuildsNavigation from '@/components/BuildsNavigation'
 
 export default function BuildsPage() {
-  const [builds, setBuilds] = useState<Build[]>([])
+  const [allBuilds, setAllBuilds] = useState<Build[]>([])
   const [filteredBuilds, setFilteredBuilds] = useState<Build[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  
+  // Filter states
+  const [selectedHero, setSelectedHero] = useState<string | null>(null)
+  const [selectedBuildType, setSelectedBuildType] = useState<string | null>(null)
+  const [selectedDifficulty, setSelectedDifficulty] = useState<string | null>(null)
+  const [searchTag, setSearchTag] = useState<string>('')
+  const [currentSort, setCurrentSort] = useState<BuildSortOption>('newest')
 
-  const loadBuilds = async (sortBy: BuildSortOption = 'newest') => {
-    setIsLoading(true)
-    const newBuilds = await getBuilds(sortBy)
-    setBuilds(newBuilds)
-    setFilteredBuilds(newBuilds)
-    setIsLoading(false)
+  // Load initial builds
+  useEffect(() => {
+    const loadBuilds = async () => {
+      setIsLoading(true)
+      const builds = await getBuilds(currentSort)
+      setAllBuilds(builds)
+      applyFilters(builds)
+      setIsLoading(false)
+    }
+
+    loadBuilds()
+  }, [currentSort])
+
+  const applyFilters = (builds: Build[]) => {
+    let filtered = [...builds]
+
+    // Apply hero filter
+    if (selectedHero) {
+      filtered = filtered.filter(build => build.heroId === selectedHero)
+    }
+
+    // Apply build type filter
+    if (selectedBuildType) {
+      filtered = filtered.filter(build => build.buildType === selectedBuildType)
+    }
+
+    // Apply difficulty filter
+    if (selectedDifficulty) {
+      filtered = filtered.filter(build => build.difficulty === selectedDifficulty)
+    }
+
+    // Apply tag filter
+    if (searchTag) {
+      filtered = filtered.filter(build => 
+        build.tags?.some(tag => 
+          tag.toLowerCase().includes(searchTag.toLowerCase())
+        )
+      )
+    }
+
+    // Apply sorting
+    filtered.sort((a, b) => {
+      switch (currentSort) {
+        case 'popular':
+          return (b.likes || 0) - (a.likes || 0)
+        case 'mostViewed':
+          return (b.views || 0) - (a.views || 0)
+        case 'topRated':
+          return ((b.rating?.average || 0) - (a.rating?.average || 0))
+        default: // 'newest'
+          return b.createdAt.getTime() - a.createdAt.getTime()
+      }
+    })
+
+    setFilteredBuilds(filtered)
   }
 
-  useEffect(() => {
-    loadBuilds()
-  }, [])
-
   const handleSortChange = (sortBy: BuildSortOption) => {
-    loadBuilds(sortBy)
+    setCurrentSort(sortBy)
   }
 
   const handleTagSearch = (tag: string) => {
-    if (!tag) {
-      setFilteredBuilds(builds)
-      return
-    }
-    
-    const filtered = builds.filter(build => 
-      build.tags?.some(buildTag => 
-        buildTag.toLowerCase().includes(tag.toLowerCase())
-      )
-    )
-    setFilteredBuilds(filtered)
+    setSearchTag(tag)
+    applyFilters(allBuilds)
+  }
+
+  const handleHeroFilter = (heroId: string | null) => {
+    setSelectedHero(heroId)
+    applyFilters(allBuilds)
+  }
+
+  const handleBuildTypeFilter = (type: string | null) => {
+    setSelectedBuildType(type)
+    applyFilters(allBuilds)
+  }
+
+  const handleDifficultyFilter = (difficulty: string | null) => {
+    setSelectedDifficulty(difficulty)
+    applyFilters(allBuilds)
+  }
+
+  const clearFilters = () => {
+    setSelectedHero(null)
+    setSelectedBuildType(null)
+    setSelectedDifficulty(null)
+    setSearchTag('')
+    setFilteredBuilds(allBuilds)
   }
 
   return (
@@ -61,18 +127,43 @@ export default function BuildsPage() {
 
       <BuildsNavigation />
       
-      <BuildsFilter 
-        onSortChange={handleSortChange}
-        onTagSearch={handleTagSearch}
-      />
+      <div className="flex flex-col md:flex-row gap-6 mt-6">
+        <BuildsFilterSidebar 
+          className="md:w-64 flex-shrink-0"
+          onSortChange={handleSortChange}
+          onTagSearch={handleTagSearch}
+          onHeroFilter={handleHeroFilter}
+          onBuildTypeFilter={handleBuildTypeFilter}
+          onDifficultyFilter={handleDifficultyFilter}
+          activeFilters={{
+            hero: selectedHero,
+            buildType: selectedBuildType,
+            difficulty: selectedDifficulty,
+            tag: searchTag,
+            sort: currentSort
+          }}
+        />
 
-      {isLoading ? (
-        <div className="text-center py-12">
-          <p className="text-gray-400">Loading builds...</p>
+        <div className="flex-grow">
+          {isLoading ? (
+            <div className="text-center py-12">
+              <p className="text-gray-400">Loading builds...</p>
+            </div>
+          ) : filteredBuilds.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-gray-400">No builds found matching your filters</p>
+              <button
+                onClick={clearFilters}
+                className="mt-4 text-blue-400 hover:text-blue-300 transition-colors"
+              >
+                Clear all filters
+              </button>
+            </div>
+          ) : (
+            <BuildsGrid initialBuilds={filteredBuilds} />
+          )}
         </div>
-      ) : (
-        <BuildsGrid initialBuilds={filteredBuilds} />
-      )}
+      </div>
     </div>
   )
 } 

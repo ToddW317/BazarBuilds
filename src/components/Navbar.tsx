@@ -1,11 +1,13 @@
 'use client'
 
 import Link from 'next/link'
-import { useAuth } from '@/contexts/AuthContext';
-import NotificationBell from './NotificationBell';
+import { useAuth } from '@/contexts/AuthContext'
+import NotificationBell from './NotificationBell'
+import { useState } from 'react'
 
 export default function Navbar() {
-  const { user, signInWithGoogle, signOut } = useAuth();
+  const { user, signInWithGoogle, signOut } = useAuth()
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
 
   return (
     <nav className="bg-gray-800 border-b border-gray-700">
@@ -18,7 +20,40 @@ export default function Navbar() {
               <span className="text-gray-400 text-sm ml-1">.com</span>
             </Link>
           </div>
+
+          {/* Mobile menu button */}
+          <div className="flex items-center md:hidden">
+            <button
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              className="text-gray-400 hover:text-white p-2"
+              aria-label="Toggle menu"
+            >
+              <svg
+                className="h-6 w-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                {isMenuOpen ? (
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                ) : (
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 6h16M4 12h16M4 18h16"
+                  />
+                )}
+              </svg>
+            </button>
+          </div>
           
+          {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-4">
             <Link 
               href="/builds" 
@@ -149,6 +184,58 @@ export default function Navbar() {
                 </button>
               </div>
             )}
+          </div>
+        </div>
+
+        {/* Mobile Navigation Menu */}
+        <div className={`${isMenuOpen ? 'block' : 'hidden'} md:hidden`}>
+          <div className="px-2 pt-2 pb-3 space-y-1">
+            <Link
+              href="/builds"
+              className="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-gray-700"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Browse Builds
+            </Link>
+            <Link
+              href="/builds/new"
+              className="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-gray-700"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Submit Build
+            </Link>
+            {user && (
+              <Link
+                href="/profile"
+                className="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-gray-700"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Profile
+              </Link>
+            )}
+            <div className="pt-4 pb-3 border-t border-gray-700">
+              {user ? (
+                <button
+                  onClick={() => {
+                    signOut()
+                    setIsMenuOpen(false)
+                  }}
+                  className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-red-400 hover:text-red-300 hover:bg-gray-700"
+                >
+                  Sign Out
+                </button>
+              ) : (
+                <button
+                  onClick={() => {
+                    signInWithGoogle()
+                    setIsMenuOpen(false)
+                  }}
+                  className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-blue-400 hover:text-blue-300 hover:bg-gray-700"
+                >
+                  Sign In
+                </button>
+              )}
+            </div>
           </div>
         </div>
       </div>

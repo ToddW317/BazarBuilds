@@ -12,6 +12,24 @@ interface BuildCardProps {
   build: Build
 }
 
+const HERO_STYLES = {
+  vanessa: {
+    gradient: 'bg-gradient-to-r from-red-900 to-gray-900',
+    border: 'border-red-700',
+    text: 'text-red-400'
+  },
+  dooley: {
+    gradient: 'bg-gradient-to-r from-gray-700 via-blue-900 to-gray-800',
+    border: 'border-blue-700',
+    text: 'text-blue-400'
+  },
+  pygmalien: {
+    gradient: 'bg-gradient-to-r from-purple-900 to-orange-900',
+    border: 'border-orange-700',
+    text: 'text-orange-400'
+  }
+}
+
 export default function BuildCard({ build }: BuildCardProps) {
   if (!build) return null
 
@@ -24,6 +42,8 @@ export default function BuildCard({ build }: BuildCardProps) {
   const rating = build.rating?.average ? 
     Math.round(build.rating.average * 10) / 10 : 
     0
+
+  const heroStyle = HERO_STYLES[build.heroId]
 
   const handleLike = async (e: React.MouseEvent) => {
     e.preventDefault()
@@ -57,6 +77,15 @@ export default function BuildCard({ build }: BuildCardProps) {
               <span className="text-gray-400">No screenshot</span>
             </div>
           )}
+          {/* Hero Indicator */}
+          <div className={`absolute bottom-0 left-0 right-0 ${heroStyle.gradient} p-2 bg-opacity-90`}>
+            <div className="flex items-center space-x-2">
+              <div className={`w-2 h-2 rounded-full ${heroStyle.border} bg-gray-900`} />
+              <p className={`text-sm font-medium ${heroStyle.text}`}>
+                {hero?.name || 'Unknown Hero'}
+              </p>
+            </div>
+          </div>
         </div>
 
         {/* Content Container - Flex grow to fill space */}
@@ -65,19 +94,14 @@ export default function BuildCard({ build }: BuildCardProps) {
           <div className="flex items-start justify-between mb-auto">
             <div>
               <h3 className="font-bold text-lg mb-1 truncate text-white">{build.title}</h3>
-              <div className="flex items-center gap-2">
-                <p className="text-sm text-gray-300">
-                  {hero?.name || 'Unknown Hero'}
-                </p>
-                {build.rating?.count > 0 && (
-                  <div className="flex items-center text-sm text-yellow-400">
-                    <span>★ {rating}</span>
-                    <span className="text-gray-400 text-xs ml-1">
-                      ({build.rating.count})
-                    </span>
-                  </div>
-                )}
-              </div>
+              {build.rating?.count > 0 && (
+                <div className="flex items-center text-sm text-yellow-400">
+                  <span>★ {rating}</span>
+                  <span className="text-gray-400 text-xs ml-1">
+                    ({build.rating.count})
+                  </span>
+                </div>
+              )}
             </div>
             <span className={`px-2 py-1 text-xs rounded-full ${
               build.buildType === 'Aggro' ? 'bg-red-900 text-red-200' :
@@ -104,7 +128,7 @@ export default function BuildCard({ build }: BuildCardProps) {
             )}
           </div>
 
-          {/* Updated Metadata section */}
+          {/* Metadata section */}
           <div className="flex items-center justify-between text-sm text-gray-400 mt-auto pt-2 border-t border-gray-700">
             <div className="flex items-center space-x-4">
               <button

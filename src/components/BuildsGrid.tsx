@@ -11,43 +11,18 @@ interface BuildsGridProps {
   sortBy?: string
 }
 
-export default function BuildsGrid({ initialBuilds, sortBy = 'newest' }: BuildsGridProps) {
+export default function BuildsGrid({ initialBuilds }: BuildsGridProps) {
   const [builds, setBuilds] = useState<Build[]>(initialBuilds)
   const [isLoading, setIsLoading] = useState(false)
 
+  // Update builds when initialBuilds changes
   useEffect(() => {
-    setIsLoading(true)
+    setBuilds(initialBuilds)
+  }, [initialBuilds])
 
-    // Create query based on sort option
-    let buildsQuery = query(
-      collection(db, 'builds'),
-      orderBy(
-        sortBy === 'popular' ? 'likes' : 
-        sortBy === 'mostViewed' ? 'views' :
-        sortBy === 'topRated' ? 'rating.average' :
-        'createdAt',
-        'desc'
-      )
-    )
-
-    // Subscribe to real-time updates
-    const unsubscribe = onSnapshot(buildsQuery, (snapshot) => {
-      const updatedBuilds = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-        createdAt: doc.data().createdAt?.toDate(),
-        updatedAt: doc.data().updatedAt?.toDate(),
-      })) as Build[]
-      
-      setBuilds(updatedBuilds)
-      setIsLoading(false)
-    }, (error) => {
-      console.error('Error getting real-time builds:', error)
-      setIsLoading(false)
-    })
-
-    // Set up individual subscriptions for each build to track view counts
-    const buildSubscriptions = initialBuilds.map(build => {
+  // Set up individual subscriptions for each build to track view counts
+  useEffect(() => {
+    const buildSubscriptions = builds.map(build => {
       const buildRef = doc(db, 'builds', build.id)
       return onSnapshot(buildRef, (doc) => {
         if (doc.exists()) {
@@ -62,12 +37,10 @@ export default function BuildsGrid({ initialBuilds, sortBy = 'newest' }: BuildsG
       })
     })
 
-    // Cleanup subscriptions on unmount
     return () => {
-      unsubscribe()
       buildSubscriptions.forEach(unsubscribe => unsubscribe())
     }
-  }, [sortBy, initialBuilds])
+  }, [builds])
 
   if (isLoading) {
     return (
