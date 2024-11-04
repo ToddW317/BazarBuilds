@@ -1,13 +1,9 @@
 'use client'
 
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useRef } from 'react'
 
 interface GoogleAdProps {
-  slot: string
-  style?: React.CSSProperties
-  format?: 'auto' | 'fluid' | 'rectangle' | 'vertical'
-  responsive?: boolean
-  mobileSlot?: string
+  className?: string
 }
 
 declare global {
@@ -16,56 +12,21 @@ declare global {
   }
 }
 
-const GoogleAd = ({ 
-  slot, 
-  mobileSlot, 
-  style, 
-  format = 'auto', 
-  responsive = true 
-}: GoogleAdProps) => {
-  const [isMobile, setIsMobile] = useState(false)
-  const advertRef = useRef<HTMLModElement>(null)
-  const [isAdLoaded, setIsAdLoaded] = useState(false)
+const GoogleAd = ({ className = '' }: GoogleAdProps) => {
+  const advertRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768)
+    try {
+      if (window.adsbygoogle) {
+        window.adsbygoogle.push({})
+      }
+    } catch (err) {
+      console.error('AdSense error:', err)
     }
-
-    checkMobile()
-    window.addEventListener('resize', checkMobile)
-    return () => window.removeEventListener('resize', checkMobile)
   }, [])
 
-  useEffect(() => {
-    if (!isAdLoaded && advertRef.current) {
-      try {
-        const adsbygoogle = window.adsbygoogle || []
-        adsbygoogle.push({})
-        setIsAdLoaded(true)
-      } catch (err) {
-        console.error('AdSense error:', err)
-      }
-    }
-  }, [isAdLoaded])
-
   return (
-    <div className="google-ad-container my-4">
-      <ins
-        ref={advertRef}
-        className="adsbygoogle"
-        style={style || { 
-          display: 'block',
-          width: isMobile ? '320px' : '100%',
-          height: isMobile ? '100px' : '250px',
-          margin: '0 auto',
-        }}
-        data-ad-client="ca-pub-5095604091036937"
-        data-ad-slot={isMobile && mobileSlot ? mobileSlot : slot}
-        data-ad-format={format}
-        data-full-width-responsive={responsive}
-      />
-    </div>
+    <div ref={advertRef} className={`adsbygoogle ${className}`} />
   )
 }
 
