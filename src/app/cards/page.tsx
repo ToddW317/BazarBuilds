@@ -4,6 +4,22 @@ import { useState, useMemo } from 'react'
 import cards from '@/data/cards.json'
 import { Card } from '@/types/cards'
 
+const isBossEncounter = (cardName: string) => {
+  const bossNames = [
+    'Gorgon Noble',
+    'Infernal',
+    'Lord of the Wastes',
+    'Veteran Octopus',
+    'Awakened District',
+    'Mr. Moo',
+    'Bounty Hunter',
+    'The Cult',
+    'Ifrit'
+    // Add other boss names here
+  ];
+  return bossNames.includes(cardName);
+};
+
 export default function CardsPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedType, setSelectedType] = useState<string>('all')
@@ -126,81 +142,150 @@ export default function CardsPage() {
         </div>
 
         {/* Cards Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {filteredCards.map(card => (
             <div 
               key={card.id}
-              className={`bg-gray-800 rounded-lg border-2 
-                ${card.isLegendary ? 'border-yellow-500' : 'border-gray-700'}
-                hover:border-gray-600 transition-colors
-                flex flex-col h-full`}
+              className={`bg-gray-800 rounded-xl overflow-hidden
+                ${card.isLegendary ? 'ring-2 ring-yellow-500' : ''}
+                hover:ring-2 hover:ring-blue-500 transition-all
+                flex flex-col shadow-lg`}
             >
               {/* Card Header */}
-              <div className="p-4 border-b border-gray-700">
-                <div className="flex justify-between items-start gap-2">
-                  <h3 className="text-lg font-bold text-white line-clamp-2">
+              <div className="relative p-4 bg-gray-900/50">
+                {/* Tier Badge */}
+                <div className="flex justify-between items-start gap-2 mb-3">
+                  <h3 className="text-xl font-bold text-white leading-tight">
                     {card.name}
                   </h3>
-                  <div className="flex flex-col items-end gap-2 flex-shrink-0">
-                    <span className={`text-xs px-2 py-1 rounded whitespace-nowrap
-                      ${card.tier === 'Gold' ? 'bg-yellow-800 text-yellow-200' :
-                        card.tier === 'Silver' ? 'bg-gray-600 text-gray-200' :
-                        'bg-amber-900 text-amber-200'}`}>
+                  <div className="flex flex-col items-end gap-2">
+                    <span className={`px-3 py-1 rounded-full text-sm font-medium
+                      ${card.tier === 'Gold' ? 'bg-yellow-500/20 text-yellow-300 ring-1 ring-yellow-500/50' :
+                        card.tier === 'Silver' ? 'bg-gray-500/20 text-gray-300 ring-1 ring-gray-500/50' :
+                        card.tier === 'Diamond' ? 'bg-cyan-500/20 text-cyan-300 ring-1 ring-cyan-500/50' :
+                        'bg-amber-800/20 text-amber-300 ring-1 ring-amber-500/50'}`}>
                       {card.tier}
-                    </span>
-                    <span className="text-xs bg-gray-700 text-gray-300 px-2 py-1 rounded">
-                      {card.size}
                     </span>
                   </div>
                 </div>
-                <div className="flex justify-between items-center mt-2">
-                  <p className="text-sm text-gray-400">Type: {card.cardType}</p>
-                  {card.castTime && (
-                    <p className="text-sm text-blue-400">Cast Time: {card.castTime}s</p>
-                  )}
+
+                {/* Type and Size Tags */}
+                <div className="flex flex-wrap gap-2 mb-2">
+                  <span className={`text-xs px-2 py-1 rounded-md border border-gray-700
+                    ${card.cardType === 'Combat' ? 'bg-red-900/30 text-red-200' :
+                      card.cardType === 'Item' ? 'bg-blue-900/30 text-blue-200' :
+                      card.cardType === 'Skill' ? 'bg-purple-900/30 text-purple-200' :
+                      card.cardType === 'Reward' ? 'bg-green-900/30 text-green-200' :
+                      card.cardType === 'Merchant' ? 'bg-yellow-900/30 text-yellow-200' :
+                      card.cardType === 'Encounter' ? 'bg-indigo-900/30 text-indigo-200' :
+                      'bg-gray-700/50 text-gray-300'}`}>
+                    {card.cardType}
+                  </span>
+                  <span className={`text-xs px-2 py-1 rounded-md border border-gray-700
+                    ${card.size === 'Small' ? 'bg-green-900/30 text-green-200' :
+                      card.size === 'Medium' ? 'bg-yellow-900/30 text-yellow-200' :
+                      'bg-red-900/30 text-red-200'}`}>
+                    {card.size}
+                  </span>
                 </div>
+
+                {/* Legendary Indicator */}
+                {card.isLegendary && (
+                  <div className="absolute -top-1 -right-1 p-4">
+                    <div className="text-yellow-500 animate-pulse">
+                      <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                      </svg>
+                    </div>
+                  </div>
+                )}
               </div>
 
-              {/* Card Body */}
-              <div className="p-4 flex-grow flex flex-col">
-                {/* Stats Grid */}
+              {/* Card Stats */}
+              <div className="p-4 flex-grow bg-gradient-to-b from-gray-800 to-gray-900">
+                {/* Primary Stats */}
                 {card.stats && Object.keys(card.stats).length > 0 && (
-                  <div className="grid grid-cols-2 gap-2 mb-4">
-                    {Object.entries(card.stats).map(([stat, value]) => 
-                      value ? (
-                        <div 
-                          key={stat}
-                          className="text-sm bg-gray-700 rounded p-2 flex justify-between items-center"
-                        >
-                          <span className="text-gray-400 truncate mr-2">
-                            {stat.charAt(0).toUpperCase() + stat.slice(1)}:
-                          </span>
-                          <span className="text-yellow-400 flex-shrink-0">{value}</span>
-                        </div>
-                      ) : null
-                    )}
+                  <div className="space-y-4">
+                    {/* Combat Stats */}
+                    <div className="grid grid-cols-2 gap-3">
+                      {Object.entries(card.stats).map(([stat, value]) => 
+                        value && stat !== 'ammo' ? (
+                          <div 
+                            key={stat}
+                            className="flex items-center gap-2 bg-gray-700/30 rounded-lg p-2.5
+                              border border-gray-700/50 hover:border-gray-600/50 transition-colors"
+                          >
+                            <span className={`text-lg
+                              ${stat === 'damage' ? 'text-red-400' :
+                                stat === 'heal' ? 'text-green-400' :
+                                stat === 'shield' ? 'text-blue-400' :
+                                stat === 'burn' ? 'text-orange-400' :
+                                stat === 'poison' ? 'text-purple-400' :
+                                'text-gray-400'}`}>
+                              {stat === 'damage' ? '⚔️' :
+                               stat === 'heal' ? '💖' :
+                               stat === 'shield' ? '🛡️' :
+                               stat === 'burn' ? '🔥' :
+                               stat === 'poison' ? '☠️' :
+                               '📊'}
+                            </span>
+                            <div className="flex flex-col">
+                              <span className="text-xs text-gray-400 capitalize">
+                                {stat}
+                              </span>
+                              <span className="text-sm font-medium text-white">
+                                {typeof value === 'number' ? value.toFixed(1) : value}
+                              </span>
+                            </div>
+                          </div>
+                        ) : null
+                      )}
+                    </div>
                   </div>
                 )}
 
-                {/* Effects */}
-                {card.effects?.map((effect, index) => (
-                  <p key={index} className="text-sm text-gray-300 mb-2">
-                    {effect}
-                  </p>
-                ))}
+                {/* Card Type Specific Info */}
+                {card.cardType === 'Combat' && (
+                  <div className="mt-4 p-3 bg-red-900/20 rounded-lg border border-red-900/30">
+                    <span className="text-red-200 text-sm">Combat Encounter</span>
+                  </div>
+                )}
+
+                {card.cardType === 'Merchant' && (
+                  <div className="mt-4 p-3 bg-yellow-900/20 rounded-lg border border-yellow-900/30">
+                    <span className="text-yellow-200 text-sm">Merchant Encounter</span>
+                  </div>
+                )}
+
+                {card.cardType === 'Encounter' && (
+                  <div className="mt-4 p-3 bg-indigo-900/20 rounded-lg border border-indigo-900/30">
+                    <span className="text-indigo-200 text-sm">Special Encounter</span>
+                  </div>
+                )}
+
+                {card.cardType === 'Reward' && (
+                  <div className="mt-4 p-3 bg-green-900/20 rounded-lg border border-green-900/30">
+                    <span className="text-green-200 text-sm">Reward Card</span>
+                  </div>
+                )}
               </div>
 
               {/* Card Footer */}
-              {card.isLegendary && (
-                <div className="p-4 border-t border-gray-700">
-                  <div className="text-yellow-500 text-sm flex items-center">
-                    <svg className="w-4 h-4 mr-1 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                    </svg>
-                    <span>Legendary</span>
+              <div className="px-4 py-3 bg-gray-900/50 border-t border-gray-700/50">
+                <div className="flex flex-col gap-1">
+                  <div className="flex justify-between items-center text-xs text-gray-400">
+                    <span className="font-medium">ID: {card.id.slice(0, 8)}...</span>
+                    {card.isLegendary && (
+                      <span className="text-yellow-500 font-medium">Legendary</span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-gray-500">
+                      {card.cardType} • {card.size} • {card.tier}
+                    </span>
                   </div>
                 </div>
-              )}
+              </div>
             </div>
           ))}
         </div>

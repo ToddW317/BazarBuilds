@@ -3299,6 +3299,22 @@ const ALL_ENCOUNTERS = [
   ...LEVEL_15_ENCOUNTERS,
 ]
 
+// Update the getImageUrl function
+const getImageUrl = (encounter: Encounter) => {
+  // Format the image name to match the file structure
+  const imageName = encounter.name
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, '')  // Remove special characters except spaces
+    .split(' ')                    // Split into words
+    .join('-');                    // Join with hyphens
+
+  // Construct the URL
+  const url = `/encounters/${imageName}.webp`;
+
+  // Return the URL - the onError handler in the img tag will handle missing images
+  return url;
+}
+
 export default function EncountersPage() {
   const [selectedLevel, setSelectedLevel] = useState(0)
   const [searchQuery, setSearchQuery] = useState('')
@@ -3366,10 +3382,21 @@ export default function EncountersPage() {
               key={encounter.id}
               className="bg-gray-800 rounded-lg overflow-hidden border border-gray-700"
             >
-              {/* Encounter Header */}
-              <div className="p-4 bg-gray-700">
-                <h2 className="text-xl font-bold text-white">{encounter.name}</h2>
-                <p className="text-gray-400">Level {encounter.level}</p>
+              {/* Encounter Image */}
+              <div className="relative w-full h-48">
+                <img
+                  src={getImageUrl(encounter)}
+                  alt={encounter.name}
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    console.log(`Failed to load image for: ${encounter.name}`);
+                    e.currentTarget.src = '/encounters/default-encounter.png'
+                  }}
+                />
+                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-gray-900/90 to-transparent p-4">
+                  <h2 className="text-xl font-bold text-white">{encounter.name}</h2>
+                  <p className="text-gray-300">Level {encounter.level}</p>
+                </div>
               </div>
 
               {/* Skill (if any) */}
