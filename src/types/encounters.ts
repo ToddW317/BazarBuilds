@@ -1,7 +1,7 @@
 export interface Loot {
   name: string;
   size: 'Small' | 'Medium' | 'Large';
-  type?: 'Weapon' | 'Tool' | 'Food' | 'Potion' | 'Property' | 'Friend' | 'Aquatic' | 'Vehicle';
+  type?: string;
   castTime?: number;
   effect: string;
   additionalEffect?: string;
@@ -9,14 +9,16 @@ export interface Loot {
   quantity?: number;
 }
 
+export interface Skill {
+  name: string;
+  effect: string;
+}
+
 export interface Encounter {
   id: string;
   name: string;
   level: number;
   imageUrl: string;
-  skill?: {
-    name: string;
-    effect: string;
-  };
+  skill?: Skill;
   loot: Loot[];
 } 

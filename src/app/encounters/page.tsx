@@ -1,8 +1,7 @@
 'use client'
 
-import { useState, useMemo } from 'react'
-import cards from '@/data/cards.json'
-import { Card } from '@/types/cards'
+import { useState } from 'react'
+import { Encounter } from '@/types/encounters'
 import GoogleAd from '@/components/GoogleAd'
 
 const LEVEL_1_ENCOUNTERS: Encounter[] = [
@@ -3303,18 +3302,67 @@ const ALL_ENCOUNTERS = [
 
 // Update the getImageUrl function
 const getImageUrl = (encounter: Encounter) => {
-  // Format the image name to match the file structure
   const imageName = encounter.name
     .toLowerCase()
-    .replace(/[^a-z0-9\s]/g, '')  // Remove special characters except spaces
-    .split(' ')                    // Split into words
-    .join('-');                    // Join with hyphens
+    .replace(/[^a-z0-9\s]/g, '')
+    .split(' ')
+    .join('-')
 
-  // Construct the URL
-  const url = `/encounters/${imageName}.webp`;
+  return `/encounters/${imageName}.webp`
+}
 
-  // Return the URL - the onError handler in the img tag will handle missing images
-  return url;
+// Helper component to render each encounter card
+const EncounterCard = ({ encounter }: { encounter: Encounter }) => {
+  return (
+    <div className="bg-gray-800 rounded-xl overflow-hidden hover:ring-2 hover:ring-blue-500 transition-all flex flex-col shadow-lg">
+      {/* Card Header */}
+      <div className="relative p-4 bg-gray-900/50">
+        <div className="flex justify-between items-start gap-2 mb-3">
+          <h3 className="text-xl font-bold text-white leading-tight">
+            {encounter.name}
+          </h3>
+          <span className="px-3 py-1 rounded-full text-sm font-medium bg-blue-500/20 text-blue-300 ring-1 ring-blue-500/50">
+            Level {encounter.level}
+          </span>
+        </div>
+
+        {encounter.skill && (
+          <div className="mt-2 p-2 bg-purple-900/20 rounded-lg border border-purple-900/30">
+            <p className="text-purple-200 text-sm font-medium">{encounter.skill.name}</p>
+            <p className="text-gray-300 text-sm">{encounter.skill.effect}</p>
+          </div>
+        )}
+      </div>
+
+      {/* Loot Section */}
+      <div className="p-4 flex-grow">
+        <h4 className="text-lg font-semibold text-yellow-400 mb-3">Loot</h4>
+        <div className="space-y-2">
+          {encounter.loot.map((item, index) => (
+            <div key={index} className="bg-gray-700/50 rounded-lg p-2 text-sm">
+              <div className="flex justify-between items-start">
+                <span className="text-white font-medium">{item.name}</span>
+                <span className="text-gray-400">{item.size}</span>
+              </div>
+              {item.type && (
+                <p className="text-gray-400 text-xs mt-1">Type: {item.type}</p>
+              )}
+              {item.castTime && (
+                <p className="text-gray-400 text-xs">Cast Time: {item.castTime}s</p>
+              )}
+              <p className="text-gray-300 mt-1">{item.effect}</p>
+              {item.additionalEffect && (
+                <p className="text-blue-300 text-xs mt-1">{item.additionalEffect}</p>
+              )}
+              {item.quantity && item.quantity > 1 && (
+                <p className="text-yellow-400 text-xs mt-1">Quantity: {item.quantity}</p>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
 }
 
 export default function EncountersPage() {
@@ -3330,74 +3378,60 @@ export default function EncountersPage() {
   return (
     <div className="min-h-screen bg-gray-900 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Top ad - high visibility */}
-        <GoogleAd 
-          slot="YOUR_AD_SLOT_ENCOUNTERS_TOP" 
-          mobileSlot="YOUR_MOBILE_AD_SLOT_ENCOUNTERS_TOP"
-        />
+        <GoogleAd className="mb-8" />
 
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
-          <h1 className="text-3xl font-bold text-white">Card Database</h1>
+          <h1 className="text-3xl font-bold text-white">PvE Encounters</h1>
           <p className="text-gray-400">
-            Showing {filteredEncounters.length} of {ALL_ENCOUNTERS.length} cards
+            Showing {filteredEncounters.length} of {ALL_ENCOUNTERS.length} encounters
           </p>
         </div>
 
-        {/* Search and Filters */}
-        <div className="bg-gray-800 p-4 sm:p-6 rounded-lg mb-8 space-y-4">
-          {/* ... existing search and filters ... */}
-        </div>
-
-        {/* Ad after filters - good visibility */}
-        <GoogleAd 
-          slot="YOUR_AD_SLOT_ENCOUNTERS_AFTER_FILTERS"
-          mobileSlot="YOUR_MOBILE_AD_SLOT_ENCOUNTERS_AFTER_FILTERS"
-        />
-
-        {/* Cards Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {filteredEncounters.slice(0, 8).map(encounter => (
-            // First 8 cards
-            <CardComponent key={encounter.id} card={encounter} />
-          ))}
-        </div>
-
-        {/* Mid-content ad - after first 8 cards */}
-        <div className="my-8">
-          <GoogleAd 
-            slot="YOUR_AD_SLOT_ENCOUNTERS_MID"
-            mobileSlot="YOUR_MOBILE_AD_SLOT_ENCOUNTERS_MID"
+        {/* Search Bar */}
+        <div className="mb-8">
+          <input
+            type="text"
+            placeholder="Search encounters by name..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full p-3 bg-gray-800 border border-gray-700 rounded-lg 
+              text-gray-100 placeholder-gray-500
+              focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {filteredEncounters.slice(8, 16).map(encounter => (
-            // Next 8 cards
-            <CardComponent key={encounter.id} card={encounter} />
+        {/* Level Selection */}
+        <div className="mb-8 flex flex-wrap gap-2">
+          <button
+            onClick={() => setSelectedLevel(0)}
+            className={`px-4 py-2 rounded-lg font-medium transition-colors
+              ${selectedLevel === 0 
+                ? 'bg-blue-500 text-white' 
+                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'}`}
+          >
+            All Levels
+          </button>
+          {Array.from({ length: 15 }, (_, i) => i + 1).map(level => (
+            <button
+              key={level}
+              onClick={() => setSelectedLevel(level)}
+              className={`px-4 py-2 rounded-lg font-medium transition-colors
+                ${selectedLevel === level 
+                  ? 'bg-blue-500 text-white' 
+                  : 'bg-gray-700 text-gray-300 hover:bg-gray-600'}`}
+            >
+              Level {level}
+            </button>
           ))}
         </div>
 
-        {/* Second mid-content ad */}
-        <div className="my-8">
-          <GoogleAd 
-            slot="YOUR_AD_SLOT_ENCOUNTERS_MID_2"
-            mobileSlot="YOUR_MOBILE_AD_SLOT_ENCOUNTERS_MID_2"
-          />
-        </div>
+        <GoogleAd className="mb-8" />
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {filteredEncounters.slice(16).map(encounter => (
-            // Remaining cards
-            <CardComponent key={encounter.id} card={encounter} />
+        {/* Encounters Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredEncounters.map(encounter => (
+            <EncounterCard key={encounter.id} encounter={encounter} />
           ))}
-        </div>
-
-        {/* Bottom ad - good visibility */}
-        <div className="mt-8">
-          <GoogleAd 
-            slot="YOUR_AD_SLOT_ENCOUNTERS_BOTTOM"
-            mobileSlot="YOUR_MOBILE_AD_SLOT_ENCOUNTERS_BOTTOM"
-          />
         </div>
 
         {/* No Results Message */}
@@ -3406,12 +3440,9 @@ export default function EncountersPage() {
             No encounters found matching "{searchQuery}"
           </div>
         )}
+
+        <GoogleAd className="mt-8" />
       </div>
     </div>
   )
-}
-
-// Helper component to keep the main component clean
-const CardComponent = ({ card }: { card: Encounter }) => {
-  // ... existing card rendering logic ...
 } 
