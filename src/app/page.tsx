@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { HEROES } from '@/config/heroes'
+import GoogleAd from '@/components/GoogleAd'
 
 export default function HomePage() {
   return (
@@ -49,6 +50,9 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Ad after hero */}
+      <GoogleAd slot="YOUR_AD_SLOT_8" />
+
       {/* Heroes Section */}
       <section className="py-20 bg-gray-800">
         <div className="max-w-7xl mx-auto px-4">
@@ -77,6 +81,9 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Ad before features */}
+      <GoogleAd slot="YOUR_AD_SLOT_9" />
+
       {/* Features Section */}
       <section className="py-20">
         <div className="max-w-7xl mx-auto px-4">
@@ -103,6 +110,9 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* Bottom ad */}
+      <GoogleAd slot="YOUR_AD_SLOT_10" />
 
       {/* CTA Section */}
       <section className="py-20 bg-gray-800">

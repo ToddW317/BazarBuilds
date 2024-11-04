@@ -5,6 +5,7 @@ import { notFound, useParams } from 'next/navigation'
 import BuildDetailsContent from '@/components/BuildDetailsContent'
 import { useState, useEffect } from 'react'
 import { Build } from '@/types/types'
+import GoogleAd from '@/components/GoogleAd'
 
 export default function BuildDetailsPage() {
   const params = useParams()
@@ -80,6 +81,9 @@ export default function BuildDetailsPage() {
   return (
     <div className="min-h-screen bg-gray-900 py-8">
       <div className="max-w-7xl mx-auto px-4">
+        {/* Top ad */}
+        <GoogleAd slot="YOUR_AD_SLOT_5" />
+
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold text-white">{build.title}</h1>
           <button
@@ -125,7 +129,13 @@ export default function BuildDetailsPage() {
           </button>
         </div>
 
+        {/* Ad before content */}
+        <GoogleAd slot="YOUR_AD_SLOT_6" />
+
         <BuildDetailsContent build={build} buildId={id} />
+
+        {/* Bottom ad */}
+        <GoogleAd slot="YOUR_AD_SLOT_7" />
       </div>
     </div>
   )

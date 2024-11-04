@@ -7,6 +7,7 @@ import { Build, BuildSortOption } from '@/types/types'
 import BuildsGrid from '@/components/BuildsGrid'
 import BuildsFilterSidebar from '@/components/BuildsFilterSidebar'
 import BuildsNavigation from '@/components/BuildsNavigation'
+import GoogleAd from '@/components/GoogleAd'
 
 export default function BuildsPage() {
   const [allBuilds, setAllBuilds] = useState<Build[]>([])
@@ -111,6 +112,9 @@ export default function BuildsPage() {
 
   return (
     <div className="max-w-7xl mx-auto p-6">
+      {/* Top ad */}
+      <GoogleAd slot="YOUR_AD_SLOT_1" />
+
       <div className="flex flex-col md:flex-row justify-between items-center mb-8">
         <div>
           <h1 className="text-3xl font-bold mb-2">Community Builds</h1>
@@ -145,6 +149,9 @@ export default function BuildsPage() {
         />
 
         <div className="flex-grow">
+          {/* Ad before content */}
+          <GoogleAd slot="YOUR_AD_SLOT_2" />
+
           {isLoading ? (
             <div className="text-center py-12">
               <p className="text-gray-400">Loading builds...</p>
@@ -160,8 +167,17 @@ export default function BuildsPage() {
               </button>
             </div>
           ) : (
-            <BuildsGrid initialBuilds={filteredBuilds} />
+            <div>
+              <BuildsGrid initialBuilds={filteredBuilds.slice(0, 10)} />
+              <GoogleAd slot="YOUR_AD_SLOT_3" />
+              {filteredBuilds.length > 10 && (
+                <BuildsGrid initialBuilds={filteredBuilds.slice(10)} />
+              )}
+            </div>
           )}
+
+          {/* Bottom ad */}
+          <GoogleAd slot="YOUR_AD_SLOT_4" />
         </div>
       </div>
     </div>

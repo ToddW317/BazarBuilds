@@ -1,7 +1,9 @@
+import Link from 'next/link'
+
 export default function Footer() {
   return (
-    <footer className="bg-gray-800 border-t border-gray-700 py-8 mt-auto">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <footer className="bg-gray-800 py-8">
+      <div className="max-w-7xl mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {/* Contact Section */}
           <div>
@@ -66,6 +68,15 @@ export default function Footer() {
               made with 🎩 - TwoPercent
             </p>
           </div>
+        </div>
+
+        <div className="mt-4 flex justify-center space-x-4 text-sm text-gray-400">
+          <Link href="/privacy" className="hover:text-white transition-colors">
+            Privacy Policy
+          </Link>
+          <Link href="/terms" className="hover:text-white transition-colors">
+            Terms of Service
+          </Link>
         </div>
       </div>
     </footer>

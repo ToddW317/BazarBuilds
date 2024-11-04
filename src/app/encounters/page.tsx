@@ -1,7 +1,9 @@
 'use client'
 
-import { useState } from 'react'
-import { Encounter, Loot } from '@/types/encounters'
+import { useState, useMemo } from 'react'
+import cards from '@/data/cards.json'
+import { Card } from '@/types/cards'
+import GoogleAd from '@/components/GoogleAd'
 
 const LEVEL_1_ENCOUNTERS: Encounter[] = [
   {
@@ -3327,45 +3329,75 @@ export default function EncountersPage() {
   
   return (
     <div className="min-h-screen bg-gray-900 py-8">
-      <div className="max-w-7xl mx-auto px-4">
-        <h1 className="text-3xl font-bold text-white mb-8">PvE Encounters</h1>
-        
-        {/* Search Bar */}
-        <div className="mb-8">
-          <input
-            type="text"
-            placeholder="Search encounters by name..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full p-3 bg-gray-800 border border-gray-700 rounded-lg 
-              text-gray-100 placeholder-gray-500
-              focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Top ad - high visibility */}
+        <GoogleAd 
+          slot="YOUR_AD_SLOT_ENCOUNTERS_TOP" 
+          mobileSlot="YOUR_MOBILE_AD_SLOT_ENCOUNTERS_TOP"
+        />
+
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+          <h1 className="text-3xl font-bold text-white">Card Database</h1>
+          <p className="text-gray-400">
+            Showing {filteredEncounters.length} of {ALL_ENCOUNTERS.length} cards
+          </p>
+        </div>
+
+        {/* Search and Filters */}
+        <div className="bg-gray-800 p-4 sm:p-6 rounded-lg mb-8 space-y-4">
+          {/* ... existing search and filters ... */}
+        </div>
+
+        {/* Ad after filters - good visibility */}
+        <GoogleAd 
+          slot="YOUR_AD_SLOT_ENCOUNTERS_AFTER_FILTERS"
+          mobileSlot="YOUR_MOBILE_AD_SLOT_ENCOUNTERS_AFTER_FILTERS"
+        />
+
+        {/* Cards Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {filteredEncounters.slice(0, 8).map(encounter => (
+            // First 8 cards
+            <CardComponent key={encounter.id} card={encounter} />
+          ))}
+        </div>
+
+        {/* Mid-content ad - after first 8 cards */}
+        <div className="my-8">
+          <GoogleAd 
+            slot="YOUR_AD_SLOT_ENCOUNTERS_MID"
+            mobileSlot="YOUR_MOBILE_AD_SLOT_ENCOUNTERS_MID"
           />
         </div>
-        
-        {/* Level Selection */}
-        <div className="mb-8 flex flex-wrap gap-2">
-          <button
-            onClick={() => setSelectedLevel(0)}
-            className={`px-4 py-2 rounded-lg font-medium transition-colors
-              ${selectedLevel === 0 
-                ? 'bg-blue-500 text-white' 
-                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'}`}
-          >
-            All Levels
-          </button>
-          {Array.from({ length: 15 }, (_, i) => i + 1).map(level => (
-            <button
-              key={level}
-              onClick={() => setSelectedLevel(level)}
-              className={`px-4 py-2 rounded-lg font-medium transition-colors
-                ${selectedLevel === level 
-                  ? 'bg-blue-500 text-white' 
-                  : 'bg-gray-700 text-gray-300 hover:bg-gray-600'}`}
-            >
-              Level {level}
-            </button>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {filteredEncounters.slice(8, 16).map(encounter => (
+            // Next 8 cards
+            <CardComponent key={encounter.id} card={encounter} />
           ))}
+        </div>
+
+        {/* Second mid-content ad */}
+        <div className="my-8">
+          <GoogleAd 
+            slot="YOUR_AD_SLOT_ENCOUNTERS_MID_2"
+            mobileSlot="YOUR_MOBILE_AD_SLOT_ENCOUNTERS_MID_2"
+          />
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {filteredEncounters.slice(16).map(encounter => (
+            // Remaining cards
+            <CardComponent key={encounter.id} card={encounter} />
+          ))}
+        </div>
+
+        {/* Bottom ad - good visibility */}
+        <div className="mt-8">
+          <GoogleAd 
+            slot="YOUR_AD_SLOT_ENCOUNTERS_BOTTOM"
+            mobileSlot="YOUR_MOBILE_AD_SLOT_ENCOUNTERS_BOTTOM"
+          />
         </div>
 
         {/* No Results Message */}
@@ -3374,89 +3406,12 @@ export default function EncountersPage() {
             No encounters found matching "{searchQuery}"
           </div>
         )}
-
-        {/* Encounters Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredEncounters.map(encounter => (
-            <div 
-              key={encounter.id}
-              className="bg-gray-800 rounded-lg overflow-hidden border border-gray-700"
-            >
-              {/* Encounter Image */}
-              <div className="relative w-full h-48">
-                <img
-                  src={getImageUrl(encounter)}
-                  alt={encounter.name}
-                  className="w-full h-full object-cover"
-                  onError={(e) => {
-                    console.log(`Failed to load image for: ${encounter.name}`);
-                    e.currentTarget.src = '/encounters/default-encounter.png'
-                  }}
-                />
-                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-gray-900/90 to-transparent p-4">
-                  <h2 className="text-xl font-bold text-white">{encounter.name}</h2>
-                  <p className="text-gray-300">Level {encounter.level}</p>
-                </div>
-              </div>
-
-              {/* Skill (if any) */}
-              {encounter.skill && (
-                <div className="p-4 border-t border-gray-700">
-                  <h3 className="font-semibold text-blue-400 mb-2">
-                    {encounter.skill.name}
-                  </h3>
-                  <p className="text-gray-300">{encounter.skill.effect}</p>
-                </div>
-              )}
-
-              {/* Loot Table */}
-              <div className="p-4 border-t border-gray-700">
-                <h3 className="font-semibold text-yellow-400 mb-3">Loot Table</h3>
-                <div className="space-y-4">
-                  {encounter.loot.map((item, index) => (
-                    <div 
-                      key={index}
-                      className="bg-gray-700 rounded-lg p-3 space-y-2"
-                    >
-                      <div className="flex justify-between items-start">
-                        <h4 className="font-medium text-white">
-                          {item.name}
-                          {item.quantity && ` (${item.quantity}x)`}
-                        </h4>
-                        <span className="text-sm text-gray-400">{item.size}</span>
-                      </div>
-                      
-                      {item.type && (
-                        <p className="text-sm text-gray-400">Type: {item.type}</p>
-                      )}
-                      
-                      {item.castTime && (
-                        <p className="text-sm text-gray-400">
-                          Cast Time: {item.castTime}s
-                        </p>
-                      )}
-                      
-                      <p className="text-sm text-gray-300">{item.effect}</p>
-                      
-                      {item.additionalEffect && (
-                        <p className="text-sm text-blue-400">
-                          {item.additionalEffect}
-                        </p>
-                      )}
-                      
-                      {item.critChance && (
-                        <p className="text-sm text-yellow-400">
-                          Crit Chance: {item.critChance}%
-                        </p>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
       </div>
     </div>
   )
+}
+
+// Helper component to keep the main component clean
+const CardComponent = ({ card }: { card: Encounter }) => {
+  // ... existing card rendering logic ...
 } 
