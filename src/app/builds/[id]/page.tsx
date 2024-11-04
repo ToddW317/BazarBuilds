@@ -1,76 +1,127 @@
 'use client'
 
 import { getBuildById, incrementBuildViews } from '@/lib/buildService'
-import { notFound } from 'next/navigation'
+import { notFound, useParams } from 'next/navigation'
 import BuildDetailsContent from '@/components/BuildDetailsContent'
-import { use } from 'react'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { Build } from '@/types/types'
 
-interface BuildDetailsPageProps {
-  params: {
-    id: string
-  }
-}
-
-export default function BuildDetailsPage({ params }: BuildDetailsPageProps) {
-  const id = use(Promise.resolve(params.id))
-  const build = use(getBuildById(id))
+export default function BuildDetailsPage() {
+  const params = useParams()
+  const id = params.id as string
+  const [build, setBuild] = useState<Build | null>(null)
+  const [loading, setLoading] = useState(true)
   const [copySuccess, setCopySuccess] = useState(false)
+  const [pageUrl, setPageUrl] = useState('')
 
-  if (!build) {
-    notFound()
-  }
+  useEffect(() => {
+    async function fetchBuild() {
+      try {
+        const buildData = await getBuildById(id)
+        if (!buildData) {
+          notFound()
+        }
+        setBuild(buildData)
+        incrementBuildViews(id)
+      } catch (error) {
+        console.error('Error fetching build:', error)
+        notFound()
+      } finally {
+        setLoading(false)
+      }
+    }
 
-  // Increment view count when the page is loaded
-  // We use a client-side approach to avoid double-counting during SSR
-  if (typeof window !== 'undefined') {
-    // Use setTimeout to ensure this runs after the component mounts
-    setTimeout(() => {
-      incrementBuildViews(id)
-    }, 0)
-  }
+    setPageUrl(window.location.href)
+    fetchBuild()
+  }, [id])
 
   const handleCopyBuild = async () => {
     try {
-      // Get the current URL
-      const buildUrl = window.location.href
-      await navigator.clipboard.writeText(buildUrl)
-      
-      // Show success message
+      await navigator.clipboard.writeText(pageUrl)
       setCopySuccess(true)
       
-      // Reset success message after 2 seconds
       setTimeout(() => {
         setCopySuccess(false)
       }, 2000)
     } catch (err) {
       console.error('Failed to copy build URL:', err)
+      // Fallback for browsers that don't support clipboard API
+      const textarea = document.createElement('textarea')
+      textarea.value = pageUrl
+      document.body.appendChild(textarea)
+      textarea.select()
+      try {
+        document.execCommand('copy')
+        setCopySuccess(true)
+        setTimeout(() => {
+          setCopySuccess(false)
+        }, 2000)
+      } catch (err) {
+        console.error('Fallback copy failed:', err)
+      }
+      document.body.removeChild(textarea)
     }
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-900 py-8">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="text-white">Loading...</div>
+        </div>
+      </div>
+    )
+  }
+
+  if (!build) {
+    return null
   }
 
   return (
     <div className="min-h-screen bg-gray-900 py-8">
       <div className="max-w-7xl mx-auto px-4">
-        <div className="mb-8">
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-3xl font-bold text-white">{build.title}</h1>
           <button
             onClick={handleCopyBuild}
             className="flex items-center space-x-2 px-4 py-2 bg-gray-700 hover:bg-gray-600 
               text-gray-200 rounded-lg transition-colors"
           >
-            <svg 
-              className="w-5 h-5" 
-              fill="none" 
-              stroke="currentColor" 
-              viewBox="0 0 24 24"
-            >
-              <path 
-                strokeLinecap="round" 
-                strokeLinejoin="round" 
-                strokeWidth={2} 
-                d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"
-              />
-            </svg>
-            <span>{copySuccess ? 'Copied!' : 'Copy Build URL'}</span>
+            {copySuccess ? (
+              <>
+                <svg 
+                  className="w-5 h-5" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
+                >
+                  <path 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round" 
+                    strokeWidth={2} 
+                    d="M5 13l4 4L19 7"
+                  />
+                </svg>
+                <span>Copied!</span>
+              </>
+            ) : (
+              <>
+                <svg 
+                  className="w-5 h-5" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
+                >
+                  <path 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round" 
+                    strokeWidth={2} 
+                    d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"
+                  />
+                </svg>
+                <span>Copy Build URL</span>
+              </>
+            )}
           </button>
         </div>
 
