@@ -3300,7 +3300,7 @@ const ALL_ENCOUNTERS = [
 ]
 
 export default function EncountersPage() {
-  const [selectedLevel, setSelectedLevel] = useState(1)
+  const [selectedLevel, setSelectedLevel] = useState(0)
   const [searchQuery, setSearchQuery] = useState('')
   
   const filteredEncounters = ALL_ENCOUNTERS.filter(encounter => {
@@ -3318,7 +3318,7 @@ export default function EncountersPage() {
         <div className="mb-8">
           <input
             type="text"
-            placeholder="Search encounters..."
+            placeholder="Search encounters by name..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full p-3 bg-gray-800 border border-gray-700 rounded-lg 
