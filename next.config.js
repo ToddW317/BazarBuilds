@@ -11,6 +11,12 @@ const nextConfig = {
   },
   experimental: {
     missingSuspenseWithCSRInDEV: false,
+  },
+  swcMinify: true,
+  modularizeImports: {
+    '@firebase/(.*)': {
+      transform: '@firebase/$1',
+    },
   }
 }
 
