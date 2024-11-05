@@ -260,15 +260,24 @@ export default function Navbar() {
             </Link>
             <div className="pt-4 pb-3 border-t border-gray-700">
               {user ? (
-                <button
-                  onClick={() => {
-                    signOut()
-                    setIsMenuOpen(false)
-                  }}
-                  className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-red-400 hover:text-red-300 hover:bg-gray-700"
-                >
-                  Sign Out
-                </button>
+                <>
+                  <Link
+                    href="/profile"
+                    className="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-gray-700"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Profile
+                  </Link>
+                  <button
+                    onClick={() => {
+                      signOut()
+                      setIsMenuOpen(false)
+                    }}
+                    className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-red-400 hover:text-red-300 hover:bg-gray-700"
+                  >
+                    Sign Out
+                  </button>
+                </>
               ) : (
                 <button
                   onClick={() => {
