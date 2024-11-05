@@ -2,9 +2,8 @@ import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import Navbar from '@/components/Navbar'
+import { AuthProvider } from '@/contexts/AuthContext'
 import Footer from '@/components/Footer'
-import Providers from '@/components/Providers'
-import MaintenanceBanner from '@/components/MaintenanceBanner'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -26,16 +25,25 @@ export default function RootLayout({
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5095604091036937"
           crossOrigin="anonymous"
         />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (adsbygoogle = window.adsbygoogle || []).push({
+                google_ad_client: "ca-pub-5095604091036937",
+                enable_page_level_ads: true
+              });
+            `
+          }}
+        />
       </head>
       <body className={`${inter.className} flex flex-col min-h-screen`}>
-        <MaintenanceBanner />
-        <Providers>
+        <AuthProvider>
           <Navbar />
           <main className="flex-grow">
             {children}
           </main>
           <Footer />
-        </Providers>
+        </AuthProvider>
       </body>
     </html>
   )
