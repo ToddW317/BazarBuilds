@@ -88,6 +88,10 @@ export async function createBuild(
 }
 
 export async function getBuilds(sortBy: BuildSortOption = 'newest'): Promise<Build[]> {
+  if (isMaintenance()) {
+    return []; // Return empty data during maintenance
+  }
+
   try {
     let buildsQuery;
 
