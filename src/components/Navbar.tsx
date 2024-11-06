@@ -18,8 +18,10 @@ export default function Navbar() {
         <div className="flex justify-between h-16">
           <div className="flex">
             <div className="flex-shrink-0 flex items-center">
-              <Link href="/" className="text-white font-bold text-xl">
-                The Bazaar Builds
+              <Link href="/" className="flex items-center font-bold text-xl">
+                <span className="text-white">Bazaar</span>
+                <span className="text-blue-500">Builds</span>
+                <span className="text-gray-400 text-sm translate-y-1 ml-1">.com</span>
               </Link>
             </div>
             <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
