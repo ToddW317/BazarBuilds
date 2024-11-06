@@ -8,6 +8,19 @@ export default function BuildsDisabledBanner() {
           <span className="text-yellow-300 font-bold">Builds are temporarily disabled</span>{' '}
           until a subtle monetization strategy is implemented to offset server costs.{' '}
           <span className="text-green-300">You all are EXTREMELY impressive!</span>
+          <br />
+          <span className="text-gray-400">
+            Consider{' '}
+            <a 
+              href="https://www.buymeacoffee.com/twopercent"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-300 hover:text-blue-200 underline"
+            >
+              buying me a coffee
+            </a>
+            {' '}to get Builds back up and running!
+          </span>
         </p>
       </div>
     </div>
