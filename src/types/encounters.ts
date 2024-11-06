@@ -1,24 +1,70 @@
-export interface Loot {
-  name: string;
-  size: 'Small' | 'Medium' | 'Large';
-  type?: string;
-  castTime?: number;
-  effect: string;
-  additionalEffect?: string;
-  critChance?: number;
-  quantity?: number;
+export interface ItemAttributes {
+  CooldownMax?: number;
+  BuyPrice: number;
+  SellPrice: number;
+  Multicast?: number;
+  DamageAmount?: number;
+  Custom_0?: number;
+  HealAmount?: number;
+  ShieldApplyAmount?: number;
+  SlowAmount?: number;
+  SlowTargets?: number;
+  FreezeAmount?: number;
+  FreezeTargets?: number;
 }
 
-export interface Skill {
-  name: string;
-  effect: string;
+export interface ItemTier {
+  AbilityIds: string[];
+  Attributes: ItemAttributes;
+  AuraIds: string[];
+  TooltipIds: number[];
+  tooltips?: {
+    Content: {
+      Key: string;
+      Text: string;
+    };
+    TooltipType: string;
+  }[];
+}
+
+export interface Item {
+  Heroes: string[];
+  Tags: string[];
+  StartingTier: string;
+  Size: string;
+  Tiers: {
+    Bronze?: ItemTier;
+    Silver?: ItemTier;
+    Gold?: ItemTier;
+    Diamond?: ItemTier;
+  };
+  InternalName: string;
+}
+
+export interface EncounterItem {
+  Name: string;
+  Tier: string;
+  Enchant: string | null;
+  ItemID: string;
+}
+
+export interface EncounterSkill {
+  Name: string;
+  Tier: string;
+  SkillID: string;
 }
 
 export interface Encounter {
-  id: string;
   name: string;
-  level: number;
-  imageUrl: string;
-  skill?: Skill;
-  loot: Loot[];
+  Health: number;
+  Level: number;
+  Items: EncounterItem[];
+  Skills: EncounterSkill[];
+}
+
+export interface EncounterData {
+  items: {
+    [key: string]: Item;
+  };
+  [key: string]: any;
 } 
