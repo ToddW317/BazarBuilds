@@ -98,18 +98,43 @@ function EncounterCard({ encounter, items }: { encounter: Encounter, items: Reco
   }
 
   // Updated helper function to get skill description from encounterData
-  const getSkillDescription = (skillName: string, skillId: string) => {
+  const getSkillDescription = (skillName: string, skillId: string, tier: string) => {
     try {
+      // Get the skill data using the skillId
       const skillData = encounterData.skills[skillId]
-      if (!skillData?.tooltips?.length) return 'No description available'
+      if (!skillData) {
+        console.log('Skill not found:', skillId)
+        return 'No description available'
+      }
 
-      // Handle the new tooltip structure
-      return skillData.tooltips
-        .filter(tooltip => tooltip?.Content?.Text)
-        .map(tooltip => tooltip.Content.Text)
-        .join(' ')
+      // Get the tier data for the skill
+      const tierData = skillData.Tiers?.[tier]
+      if (!tierData) {
+        console.log('No tier data found for tier:', tier, 'in skill:', skillId)
+        return 'No description available'
+      }
+
+      // Check for both formats of tooltips
+      if (tierData.Tooltips && typeof tierData.Tooltips === 'string') {
+        // Handle string format
+        return tierData.Tooltips
+      } else if (tierData.tooltips?.length) {
+        // Handle array format
+        return tierData.tooltips
+          .map(tooltip => {
+            if (typeof tooltip === 'string') {
+              return tooltip
+            }
+            return tooltip?.Content?.Text || ''
+          })
+          .filter(Boolean)
+          .join(' ')
+      }
+
+      console.log('No tooltips found for tier:', tier, 'in skill:', skillId)
+      return 'No description available'
     } catch (error) {
-      console.error('Error getting skill description:', error, { skillName, skillId })
+      console.error('Error getting skill description:', error, { skillName, skillId, tier })
       return 'No description available'
     }
   }
@@ -228,7 +253,7 @@ function EncounterCard({ encounter, items }: { encounter: Encounter, items: Reco
                           <span className={`${getTierColor(skill.Tier)} text-sm`}>{skill.Tier}</span>
                         </div>
                         <p className="text-sm text-gray-400">
-                          {getSkillDescription(skill.Name, skill.SkillID)}
+                          {getSkillDescription(skill.Name, skill.SkillID, skill.Tier)}
                         </p>
                       </div>
                     </div>
