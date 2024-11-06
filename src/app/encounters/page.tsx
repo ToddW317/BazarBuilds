@@ -55,49 +55,63 @@ function EncounterCard({ encounter, items }: { encounter: Encounter, items: Reco
     return `/encounters/${formattedName}.webp`
   }
 
-  // Updated helper function to get skill description from encounterData
-  const getSkillDescription = (skillName: string, skillId: string) => {
+  // Helper function to format time values
+  const formatTime = (ms: number) => {
+    return (ms / 100).toFixed(1)
+  }
+
+  // Updated helper function to get item description from tooltips
+  const getItemDescription = (itemId: string, tier: string) => {
     try {
-      // First try to get the skill directly from the skills data
-      const skillData = encounterData.skills[skillId]
-      if (skillData?.tooltips?.length) {
-        return skillData.tooltips.map((tooltip: any) => tooltip.Content.Text).join(' ')
+      const item = encounterData.items[itemId]
+      if (!item) {
+        console.log('Item not found:', itemId)
+        return 'No description available'
       }
 
-      // If not found, try to find it through the monster's data
-      const monsterGUID = Object.entries(encounterData.monsters).find(
-        ([_, monster]) => monster.name === encounter.name
-      )?.[0]
+      const tierData = item.Tiers[tier]
+      if (!tierData) {
+        console.log('Tier not found:', tier, 'for item:', itemId)
+        return 'No description available'
+      }
 
-      if (!monsterGUID) return 'No description available'
+      // Check if tooltips exist and are properly formatted
+      if (!Array.isArray(tierData.tooltips) || !tierData.tooltips.length) {
+        console.log('No tooltips found for tier:', tier, 'item:', itemId)
+        return 'No description available'
+      }
 
-      const monsterData = encounterData.monsters[monsterGUID]
-      const monsterSkill = monsterData.Skills.find(
-        (skill: any) => skill.Name === skillName || skill.SkillID === skillId
-      )
-
-      if (!monsterSkill) return 'No description available'
-
-      // Try to get the skill data using the found skill ID
-      const foundSkillData = encounterData.skills[monsterSkill.SkillID]
-      if (!foundSkillData?.tooltips?.length) return 'No description available'
-
-      return foundSkillData.tooltips.map((tooltip: any) => tooltip.Content.Text).join(' ')
+      // Join all tooltip texts
+      return tierData.tooltips
+        .map(tooltip => {
+          if (typeof tooltip === 'string') {
+            return tooltip
+          }
+          return tooltip?.Content?.Text || ''
+        })
+        .filter(text => text)
+        .join(' ')
     } catch (error) {
-      console.error('Error getting skill description:', error, { skillName, skillId })
+      console.error('Error getting item description:', error, { itemId, tier })
       return 'No description available'
     }
   }
 
-  // Helper function to get item description from tooltips
-  const getItemDescription = (itemId: string, tier: string) => {
-    const item = items[itemId]
-    if (!item) return 'No description available'
+  // Updated helper function to get skill description from encounterData
+  const getSkillDescription = (skillName: string, skillId: string) => {
+    try {
+      const skillData = encounterData.skills[skillId]
+      if (!skillData?.tooltips?.length) return 'No description available'
 
-    const tierData = item.Tiers[tier as keyof typeof item.Tiers]
-    if (!tierData?.tooltips?.length) return 'No description available'
-
-    return tierData.tooltips.map(tooltip => tooltip.Content.Text).join(' ')
+      // Handle the new tooltip structure
+      return skillData.tooltips
+        .filter(tooltip => tooltip?.Content?.Text)
+        .map(tooltip => tooltip.Content.Text)
+        .join(' ')
+    } catch (error) {
+      console.error('Error getting skill description:', error, { skillName, skillId })
+      return 'No description available'
+    }
   }
 
   // Updated helper function to get skill image URL

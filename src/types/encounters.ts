@@ -1,30 +1,33 @@
-export interface ItemAttributes {
-  CooldownMax?: number;
-  BuyPrice: number;
-  SellPrice: number;
-  Multicast?: number;
-  DamageAmount?: number;
-  Custom_0?: number;
-  HealAmount?: number;
-  ShieldApplyAmount?: number;
-  SlowAmount?: number;
-  SlowTargets?: number;
-  FreezeAmount?: number;
-  FreezeTargets?: number;
+export interface Tooltip {
+  Content: {
+    Key: string;
+    Text: string;
+  };
+  TooltipType: string;
 }
 
 export interface ItemTier {
   AbilityIds: string[];
-  Attributes: ItemAttributes;
+  Attributes: {
+    CooldownMax?: number;
+    BuyPrice: number;
+    SellPrice: number;
+    Multicast?: number;
+    DamageAmount?: number;
+    Custom_0?: number;
+    HealAmount?: number;
+    ShieldApplyAmount?: number;
+    SlowAmount?: number;
+    SlowTargets?: number;
+    FreezeAmount?: number;
+    FreezeTargets?: number;
+    BurnApplyAmount?: number;
+    PoisonAmount?: number;
+    [key: string]: number | undefined;
+  };
   AuraIds: string[];
   TooltipIds: number[];
-  tooltips?: {
-    Content: {
-      Key: string;
-      Text: string;
-    };
-    TooltipType: string;
-  }[];
+  tooltips: Tooltip[];
 }
 
 export interface Item {
@@ -33,10 +36,7 @@ export interface Item {
   StartingTier: string;
   Size: string;
   Tiers: {
-    Bronze?: ItemTier;
-    Silver?: ItemTier;
-    Gold?: ItemTier;
-    Diamond?: ItemTier;
+    [key: string]: ItemTier;
   };
   InternalName: string;
 }
@@ -63,8 +63,10 @@ export interface Encounter {
 }
 
 export interface EncounterData {
-  items: {
-    [key: string]: Item;
-  };
-  [key: string]: any;
+  items: Record<string, Item>;
+  monsters: Record<string, Encounter>;
+  skills: Record<string, {
+    tooltips: Tooltip[];
+    [key: string]: any;
+  }>;
 } 
