@@ -4,6 +4,7 @@ import { useState, useMemo } from 'react'
 import { Encounter, EncounterData, Item } from '@/types/encounters'
 import encounterData from '@/data/out.json'
 import WIPBadge from '@/components/WIPBadge'
+import CreditBanner from '@/components/CreditBanner'
 
 function getTierColor(tier: string) {
   switch (tier) {
@@ -362,104 +363,107 @@ export default function EncountersPage() {
   }, [selectedLevel, searchQuery, selectedTier, selectedTag, showBossesOnly])
 
   return (
-    <div className="min-h-screen bg-gray-900 py-8 relative">
-      <WIPBadge />
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-white">PvE Encounters</h1>
-            <p className="text-gray-400">
-              Showing {filteredEncounters.length} of {parsedEncounters.length} encounters
-            </p>
+    <div className="min-h-screen bg-gray-900 relative">
+      <CreditBanner />
+      <div className="py-8">
+        <WIPBadge />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+            <div>
+              <h1 className="text-3xl font-bold text-white">PvE Encounters</h1>
+              <p className="text-gray-400">
+                Showing {filteredEncounters.length} of {parsedEncounters.length} encounters
+              </p>
+            </div>
           </div>
-        </div>
 
-        {/* Filters */}
-        <div className="grid gap-4 mb-8">
-          {/* Search */}
-          <input
-            type="text"
-            placeholder="Search encounters by name..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full p-3 bg-gray-800 border border-gray-700 rounded-lg 
-              text-gray-100 placeholder-gray-500
-              focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          />
-
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            {/* Level Selection */}
-            <select
-              value={selectedLevel}
-              onChange={(e) => setSelectedLevel(Number(e.target.value))}
+          {/* Filters */}
+          <div className="grid gap-4 mb-8">
+            {/* Search */}
+            <input
+              type="text"
+              placeholder="Search encounters by name..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full p-3 bg-gray-800 border border-gray-700 rounded-lg 
-                text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            >
-              <option value={0}>All Levels</option>
-              {Array.from({ length: 15 }, (_, i) => i + 1).map(level => (
-                <option key={level} value={level}>Level {level}</option>
-              ))}
-            </select>
-
-            {/* Tier Filter */}
-            <select
-              value={selectedTier}
-              onChange={(e) => setSelectedTier(e.target.value)}
-              className="w-full p-3 bg-gray-800 border border-gray-700 rounded-lg 
-                text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            >
-              <option value="">All Tiers</option>
-              {['Bronze', 'Silver', 'Gold', 'Diamond', 'Legendary'].map(tier => (
-                <option key={tier} value={tier}>{tier}</option>
-              ))}
-            </select>
-
-            {/* Tag Filter */}
-            <select
-              value={selectedTag}
-              onChange={(e) => setSelectedTag(e.target.value)}
-              className="w-full p-3 bg-gray-800 border border-gray-700 rounded-lg 
-                text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            >
-              <option value="">All Item Types</option>
-              {allItemTags.map(tag => (
-                <option key={tag} value={tag}>{tag}</option>
-              ))}
-            </select>
-
-            {/* Boss Toggle */}
-            <button
-              onClick={() => setShowBossesOnly(!showBossesOnly)}
-              className={`
-                p-3 rounded-lg font-medium transition-colors
-                ${showBossesOnly 
-                  ? 'bg-purple-500/20 text-purple-300 ring-1 ring-purple-500/50' 
-                  : 'bg-gray-800 text-gray-300 border border-gray-700 hover:bg-gray-700'
-                }
-              `}
-            >
-              👑 {showBossesOnly ? 'Show All' : 'Bosses Only'}
-            </button>
-          </div>
-        </div>
-
-        {/* Encounters Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {filteredEncounters.map(encounter => (
-            <EncounterCard 
-              key={encounter.name} 
-              encounter={encounter}
-              items={encounterData.items}
+                text-gray-100 placeholder-gray-500
+                focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
-          ))}
-        </div>
 
-        {/* No Results Message */}
-        {filteredEncounters.length === 0 && (
-          <div className="text-center text-gray-400 py-12">
-            No encounters found matching your criteria
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              {/* Level Selection */}
+              <select
+                value={selectedLevel}
+                onChange={(e) => setSelectedLevel(Number(e.target.value))}
+                className="w-full p-3 bg-gray-800 border border-gray-700 rounded-lg 
+                  text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              >
+                <option value={0}>All Levels</option>
+                {Array.from({ length: 15 }, (_, i) => i + 1).map(level => (
+                  <option key={level} value={level}>Level {level}</option>
+                ))}
+              </select>
+
+              {/* Tier Filter */}
+              <select
+                value={selectedTier}
+                onChange={(e) => setSelectedTier(e.target.value)}
+                className="w-full p-3 bg-gray-800 border border-gray-700 rounded-lg 
+                  text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              >
+                <option value="">All Tiers</option>
+                {['Bronze', 'Silver', 'Gold', 'Diamond', 'Legendary'].map(tier => (
+                  <option key={tier} value={tier}>{tier}</option>
+                ))}
+              </select>
+
+              {/* Tag Filter */}
+              <select
+                value={selectedTag}
+                onChange={(e) => setSelectedTag(e.target.value)}
+                className="w-full p-3 bg-gray-800 border border-gray-700 rounded-lg 
+                  text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              >
+                <option value="">All Item Types</option>
+                {allItemTags.map(tag => (
+                  <option key={tag} value={tag}>{tag}</option>
+                ))}
+              </select>
+
+              {/* Boss Toggle */}
+              <button
+                onClick={() => setShowBossesOnly(!showBossesOnly)}
+                className={`
+                  p-3 rounded-lg font-medium transition-colors
+                  ${showBossesOnly 
+                    ? 'bg-purple-500/20 text-purple-300 ring-1 ring-purple-500/50' 
+                    : 'bg-gray-800 text-gray-300 border border-gray-700 hover:bg-gray-700'
+                  }
+                `}
+              >
+                👑 {showBossesOnly ? 'Show All' : 'Bosses Only'}
+              </button>
+            </div>
           </div>
-        )}
+
+          {/* Encounters Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {filteredEncounters.map(encounter => (
+              <EncounterCard 
+                key={encounter.name} 
+                encounter={encounter}
+                items={encounterData.items}
+              />
+            ))}
+          </div>
+
+          {/* No Results Message */}
+          {filteredEncounters.length === 0 && (
+            <div className="text-center text-gray-400 py-12">
+              No encounters found matching your criteria
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )

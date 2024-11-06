@@ -6,6 +6,7 @@ import encounterData from '@/data/out.json'
 import { cacheData, getCachedData } from '@/utils/cache'
 import CardDisplay from '@/components/CardDisplay'
 import WIPBadge from '@/components/WIPBadge'
+import CreditBanner from '@/components/CreditBanner'
 
 function getTierColor(tier: string) {
   switch (tier) {
@@ -186,82 +187,85 @@ export default function CardsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 py-8 relative">
-      <WIPBadge />
-      <div className="max-w-7xl mx-auto px-4">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-white">Cards Database</h1>
-            <p className="text-gray-400">
-              Showing {filteredItems.length} of {Object.keys(cachedItems).length} cards
-            </p>
+    <div className="min-h-screen bg-gray-900 relative">
+      <CreditBanner />
+      <div className="py-8">
+        <WIPBadge />
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+            <div>
+              <h1 className="text-3xl font-bold text-white">Cards Database</h1>
+              <p className="text-gray-400">
+                Showing {filteredItems.length} of {Object.keys(cachedItems).length} cards
+              </p>
+            </div>
           </div>
-        </div>
 
-        {/* Filters */}
-        <div className="grid gap-4 mb-8">
-          <input
-            type="text"
-            placeholder="Search cards by name..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full p-3 bg-gray-800 border border-gray-700 rounded-lg 
-              text-gray-100 placeholder-gray-500
-              focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          />
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <select
-              value={selectedTag}
-              onChange={(e) => setSelectedTag(e.target.value)}
+          {/* Filters */}
+          <div className="grid gap-4 mb-8">
+            <input
+              type="text"
+              placeholder="Search cards by name..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full p-3 bg-gray-800 border border-gray-700 rounded-lg 
-                text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            >
-              <option value="">All Types</option>
-              {allTags.map(tag => (
-                <option key={tag} value={tag}>{tag}</option>
-              ))}
-            </select>
+                text-gray-100 placeholder-gray-500
+                focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            />
 
-            <select
-              value={selectedSize}
-              onChange={(e) => setSelectedSize(e.target.value)}
-              className="w-full p-3 bg-gray-800 border border-gray-700 rounded-lg 
-                text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            >
-              <option value="">All Sizes</option>
-              {allSizes.map(size => (
-                <option key={size} value={size}>{size}</option>
-              ))}
-            </select>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <select
+                value={selectedTag}
+                onChange={(e) => setSelectedTag(e.target.value)}
+                className="w-full p-3 bg-gray-800 border border-gray-700 rounded-lg 
+                  text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              >
+                <option value="">All Types</option>
+                {allTags.map(tag => (
+                  <option key={tag} value={tag}>{tag}</option>
+                ))}
+              </select>
 
-            <select
-              value={selectedHero}
-              onChange={(e) => setSelectedHero(e.target.value)}
-              className="w-full p-3 bg-gray-800 border border-gray-700 rounded-lg 
-                text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            >
-              <option value="">All Heroes</option>
-              {allHeroes.map(hero => (
-                <option key={hero} value={hero}>{hero}</option>
-              ))}
-            </select>
+              <select
+                value={selectedSize}
+                onChange={(e) => setSelectedSize(e.target.value)}
+                className="w-full p-3 bg-gray-800 border border-gray-700 rounded-lg 
+                  text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              >
+                <option value="">All Sizes</option>
+                {allSizes.map(size => (
+                  <option key={size} value={size}>{size}</option>
+                ))}
+              </select>
+
+              <select
+                value={selectedHero}
+                onChange={(e) => setSelectedHero(e.target.value)}
+                className="w-full p-3 bg-gray-800 border border-gray-700 rounded-lg 
+                  text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              >
+                <option value="">All Heroes</option>
+                {allHeroes.map(hero => (
+                  <option key={hero} value={hero}>{hero}</option>
+                ))}
+              </select>
+            </div>
           </div>
-        </div>
 
-        {/* Updated Cards Grid */}
-        <div className="flex flex-wrap">
-          {filteredItems.map(([itemId, item]) => (
-            <CardDisplay key={itemId} item={item} itemId={itemId} />
-          ))}
-        </div>
-
-        {/* No Results Message */}
-        {filteredItems.length === 0 && (
-          <div className="text-center text-gray-400 py-12">
-            No cards found matching your criteria
+          {/* Updated Cards Grid */}
+          <div className="flex flex-wrap">
+            {filteredItems.map(([itemId, item]) => (
+              <CardDisplay key={itemId} item={item} itemId={itemId} />
+            ))}
           </div>
-        )}
+
+          {/* No Results Message */}
+          {filteredItems.length === 0 && (
+            <div className="text-center text-gray-400 py-12">
+              No cards found matching your criteria
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )
