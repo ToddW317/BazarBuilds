@@ -8,6 +8,7 @@ import BuildsGrid from '@/components/BuildsGrid'
 import BuildsFilterSidebar from '@/components/BuildsFilterSidebar'
 import BuildsNavigation from '@/components/BuildsNavigation'
 import GoogleAd from '@/components/GoogleAd'
+import BuildsDisabledBanner from '@/components/BuildsDisabledBanner'
 
 export default function BuildsPage() {
   const [allBuilds, setAllBuilds] = useState<Build[]>([])
@@ -112,6 +113,7 @@ export default function BuildsPage() {
 
   return (
     <div className="max-w-7xl mx-auto p-6">
+      <BuildsDisabledBanner />
       {/* Top ad */}
       <GoogleAd slot="YOUR_AD_SLOT_1" />
 
