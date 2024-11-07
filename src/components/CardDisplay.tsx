@@ -3,13 +3,18 @@
 import { useState } from 'react'
 import { Item } from '@/types/encounters'
 import { attributeIcons, tagIcons, decipherCustomAttribute } from '@/utils/cardIcons'
+import { LucideIcon } from 'lucide-react'
+import Icon from '@/components/ui/Icon'
+
+// Define size type
+type ItemSize = 'Small' | 'Medium' | 'Large'
 
 // Update size widths to be more proportional
-const sizeWidths = {
+const sizeWidths: Record<ItemSize, string> = {
   Small: 'w-1/4',
   Medium: 'w-1/3',
   Large: 'w-2/5'
-} as const
+}
 
 const tierStyles = {
   Bronze: 'border-amber-600 shadow-[0_0_15px_rgba(217,119,6,0.3)]',
@@ -108,7 +113,7 @@ export default function CardDisplay({ item, itemId }: CardDisplayProps) {
   const currentTierData = item.Tiers[selectedTier as keyof typeof item.Tiers]
 
   return (
-    <div className={`${sizeWidths[item.Size]} p-2 transition-all duration-300`}>
+    <div className={`${sizeWidths[item.Size as ItemSize]} p-2 transition-all duration-300`}>
       <div 
         onClick={() => window.open(`/cards/${itemId}`, '_blank')}
         className={`
@@ -161,15 +166,18 @@ export default function CardDisplay({ item, itemId }: CardDisplayProps) {
         <div className="p-3 space-y-3">
           {/* Tags */}
           <div className="flex flex-wrap gap-1">
-            {item.Tags.map((tag, i) => (
-              <span 
-                key={i} 
-                className="inline-flex items-center text-xs px-1.5 py-0.5 rounded bg-gray-700/50 text-gray-300"
-                title={tag}
-              >
-                {tagIcons[tag]}
-              </span>
-            ))}
+            {item.Tags.map((tag, i) => {
+              const TagIcon = tagIcons[tag]
+              return (
+                <span 
+                  key={i} 
+                  className="inline-flex items-center gap-1 text-xs px-1.5 py-0.5 rounded bg-gray-700/50 text-gray-300"
+                >
+                  {TagIcon && <Icon icon={TagIcon} className="w-3 h-3" />}
+                  {tag}
+                </span>
+              )
+            })}
           </div>
 
           {/* Tier Selection */}
@@ -201,22 +209,25 @@ export default function CardDisplay({ item, itemId }: CardDisplayProps) {
                 {Object.entries(currentTierData.Attributes)
                   .filter(([key]) => key !== 'CooldownMax')
                   .map(([key, value]) => {
-                    const iconInfo = attributeIcons[key]
-                    if (!iconInfo) return null
+                    const IconComponent = attributeIcons[key]?.icon
+                    if (!IconComponent) return null
 
                     return (
                       <div 
                         key={key}
                         className="flex items-center gap-1.5 bg-gray-700/30 rounded p-1.5"
-                        title={iconInfo.label}
+                        title={attributeIcons[key].label}
                       >
-                        <span className="text-base">{iconInfo.icon}</span>
-                        <span className="text-white">
-                          {key === 'Custom_0' 
-                            ? decipherCustomAttribute(key, value as number, item.Tags)
-                            : value
-                          }
-                        </span>
+                        <Icon icon={IconComponent} className="w-4 h-4" />
+                        <div className="flex flex-col">
+                          <span className="text-xs text-gray-400">{attributeIcons[key].label}</span>
+                          <span className="text-white">
+                            {key === 'Custom_0' 
+                              ? decipherCustomAttribute(key, value as number, item.Tags)
+                              : value
+                            }
+                          </span>
+                        </div>
                       </div>
                     )
                   })}
@@ -225,7 +236,7 @@ export default function CardDisplay({ item, itemId }: CardDisplayProps) {
               {/* Effects */}
               {currentTierData.tooltips && (
                 <div className="space-y-1">
-                  {currentTierData.tooltips.map((tooltip, index) => {
+                  {currentTierData.tooltips.map((tooltip: any, index: number) => {
                     const tooltipContent = typeof tooltip === 'string' 
                       ? tooltip 
                       : tooltip?.Content?.Text || '';

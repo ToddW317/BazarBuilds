@@ -1,16 +1,26 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import Image from 'next/image'
-import Link from 'next/link'
-import WIPBadge from '@/components/WIPBadge'
-import { Item, Build } from '@/types/encounters'
-import encounterData from '@/data/out.json'
-import { Tab } from '@headlessui/react'
-import { getRelatedBuilds } from '@/lib/buildService'
-import { formatImagePath } from '@/components/CardDisplay'
+import { useState } from 'react'
+import { Item } from '@/types/encounters'
 import { attributeIcons, tagIcons, decipherCustomAttribute } from '@/utils/cardIcons'
+import { LucideIcon } from 'lucide-react'
+import Icon from '@/components/ui/Icon'
+import encounterData from '@/data/out.json'
+import WIPBadge from '@/components/WIPBadge'
+import { 
+  Sword, 
+  Shield, 
+  Heart, 
+  Clock, 
+  Coins, 
+  Zap, 
+  Star,
+  ArrowRight,
+  Skull
+} from 'lucide-react'
+import Link from 'next/link'
 
+// Add hero colors
 const heroColors = {
   'Jules': {
     bg: 'bg-orange-900/20',
@@ -44,202 +54,164 @@ const heroColors = {
   }
 } as const;
 
-const tierStyles = {
-  Bronze: 'border-amber-600 shadow-[0_0_15px_rgba(217,119,6,0.3)]',
-  Silver: 'border-gray-400 shadow-[0_0_15px_rgba(156,163,175,0.3)]',
-  Gold: 'border-yellow-400 shadow-[0_0_15px_rgba(251,191,36,0.3)]',
-  Diamond: 'border-cyan-400 shadow-[0_0_15px_rgba(34,211,238,0.3)]'
-} as const;
+// Add helper function to get item image
+function getItemImage(itemId: string) {
+  // First, get the item data using the ID
+  const item = (encounterData.items as Record<string, Item>)[itemId]
+  if (!item) return '/items/default-item.png'
 
-function getTierColor(tier: string) {
-  switch (tier) {
-    case 'Bronze': return 'text-amber-600'
-    case 'Silver': return 'text-gray-400'
-    case 'Gold': return 'text-yellow-400'
-    case 'Diamond': return 'text-cyan-400'
-    case 'Legendary': return 'text-purple-400'
-    default: return 'text-white'
+  // Get the ArtKey from the item data
+  const artKey = item.ArtKey
+  if (!artKey) {
+    // If no ArtKey, try to construct the image path using the naming pattern
+    const hero = item.Heroes?.[0] || 'Common'
+    return `/items/CF_${item.Size === 'Small' ? 'S' : item.Size === 'Large' ? 'L' : 'M'}_${
+      hero === 'Jules' ? 'JUL' :
+      hero === 'Dooley' ? 'DOO' :
+      hero === 'Stelle' ? 'STE' :
+      hero === 'Pygmalien' ? 'PYG' :
+      hero === 'Vanessa' ? 'VAN' : 'ADV'
+    }_${item.InternalName.replace(/\s+/g, '')}_D.jpeg`
   }
+
+  // If we have an ArtKey, use it to find the corresponding image
+  return `/items/${artKey}.png`
 }
 
-interface CardDetailsProps {
+interface CardDetailsContentProps {
   params: {
     id: string
   }
 }
 
-interface BuildStatistics {
-  totalBuilds: number
-  popularityScore: number // 0-100
-  winRate: number // 0-100
-  pickRate: number // 0-100
-  metaScore: number // 0-100
-  topBuilds: {
-    id: string
-    name: string
-    author: string
-    votes: number
-    winRate: number
-  }[]
+function MetaScore({ item }: { item: Item }) {
+  // TODO: Implement actual meta score calculation based on build instances
+  const metaScore = 85 // Placeholder
+  
+  return (
+    <div className="text-center bg-gray-700/30 rounded-lg p-4">
+      <div className="text-sm text-gray-400">Meta Score</div>
+      <div className="text-2xl font-bold text-blue-400">{metaScore}</div>
+      <div className="text-xs text-gray-500">Based on build popularity</div>
+    </div>
+  )
 }
 
-interface ChangelogEntry {
-  date: string
-  version: string
-  changes: {
-    type: 'buff' | 'nerf' | 'change' | 'bugfix'
-    description: string
-  }[]
-}
-
-export default function CardDetailsContent({ params }: CardDetailsProps) {
+export default function CardDetailsContent({ params }: CardDetailsContentProps) {
   const item = (encounterData.items as Record<string, Item>)[params.id]
-  const [selectedTier, setSelectedTier] = useState<string>(item?.StartingTier || '')
-  const [selectedTab, setSelectedTab] = useState(0)
-  const [relatedBuilds, setRelatedBuilds] = useState<Build[]>([])
-  const [statistics, setStatistics] = useState<BuildStatistics>({
-    totalBuilds: 0,
-    popularityScore: 0,
-    winRate: 0,
-    pickRate: 0,
-    metaScore: 0,
-    topBuilds: []
-  })
-
-  const changelog: ChangelogEntry[] = [
-    {
-      date: '2024-03-15',
-      version: '1.2.0',
-      changes: [
-        { type: 'buff', description: 'Increased base damage by 10%' },
-        { type: 'change', description: 'Adjusted scaling with character level' }
-      ]
-    },
-    {
-      date: '2024-02-28',
-      version: '1.1.5',
-      changes: [
-        { type: 'nerf', description: 'Reduced effect duration from 5s to 4s' },
-        { type: 'bugfix', description: 'Fixed interaction with certain hero abilities' }
-      ]
-    }
-  ]
-
-  const getItemImageUrl = (itemId: string) => {
-    try {
-      if (!item) return '/items/default-item.png'
-      
-      const imagePath = formatImagePath(
-        item.InternalName,
-        item.Size,
-        item.Heroes[0] || 'Common'
-      )
-      return `/items/${imagePath}`
-    } catch (error) {
-      console.error('Error getting item image:', error)
-      return '/items/default-item.png'
-    }
-  }
-
-  useEffect(() => {
-    const loadRelatedBuilds = async () => {
-      const builds = await getRelatedBuilds(params.id)
-      setRelatedBuilds(builds)
-    }
-    loadRelatedBuilds()
-  }, [params.id])
+  const [selectedTier, setSelectedTier] = useState<string>(item?.StartingTier || 'Bronze')
+  const currentTierData = item?.Tiers[selectedTier as keyof typeof item.Tiers]
+  const tiers = Object.keys(item?.Tiers || {})
+  const tierIndex = tiers.indexOf(selectedTier)
+  const previousTierData = tierIndex > 0 ? item?.Tiers[tiers[tierIndex - 1]] : null
 
   if (!item) {
-    return <div className="text-white">Card not found</div>
+    return <div>Card not found</div>
   }
 
-  const currentTierData = item.Tiers[selectedTier as keyof typeof item.Tiers]
-  const tiers = Object.keys(item.Tiers)
+  // Update how we find and map encounters that drop this item
+  const dropsFrom = Object.entries(encounterData.monsters || {})
+    .filter(([monsterName, monster]) => monster.Items?.some(i => i.ItemID === params.id))
+    .map(([monsterName, monster]) => {
+      return {
+        id: monster.name, // This is the GUID
+        name: monsterName, // This is the actual monster name
+        Level: monster.Level,
+        Health: monster.Health
+      }
+    })
 
   return (
-    <div className="min-h-screen bg-gray-900">
-      <div className="mb-8">
-        <WIPBadge />
-      </div>
-
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-1">
-            <div className={`
-              bg-gray-800 rounded-xl overflow-hidden border
-              ${tierStyles[selectedTier as keyof typeof tierStyles] || ''}
+    <div className="min-h-screen bg-gray-900 py-8 relative">
+      <WIPBadge />
+      <div className="max-w-7xl mx-auto px-4">
+        {/* Header Section */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-white mb-2">{item.InternalName}</h1>
+          <div className="flex flex-wrap gap-2 items-center">
+            {item.Tags.map((tag, i) => {
+              const TagIcon = tagIcons[tag]
+              return (
+                <span 
+                  key={i} 
+                  className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gray-800 text-gray-300"
+                >
+                  {TagIcon && <Icon icon={TagIcon} className="w-4 h-4" />}
+                  {tag}
+                </span>
+              )
+            })}
+            <span className={`
+              px-3 py-1 rounded-full text-sm font-medium
+              ${item.Size === 'Small' ? 'bg-green-500/20 text-green-300 ring-1 ring-green-500/50' :
+                item.Size === 'Medium' ? 'bg-blue-500/20 text-blue-300 ring-1 ring-blue-500/50' :
+                'bg-purple-500/20 text-purple-300 ring-1 ring-purple-500/50'}
             `}>
-              <div className="relative aspect-video">
+              {item.Size}
+            </span>
+          </div>
+        </div>
+
+        {/* Main Content Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Left Column - Image and Meta */}
+          <div className="lg:col-span-1 space-y-6">
+            {/* Card Image */}
+            <div className="bg-gray-800 rounded-lg overflow-hidden">
+              <div className="aspect-square w-full bg-gray-900">
                 <img
-                  src={getItemImageUrl(params.id)}
+                  src={getItemImage(params.id)}
                   alt={item.InternalName}
-                  className="w-full h-full object-contain bg-gray-900"
-                  onError={(e: any) => {
+                  className="w-full h-full object-contain"
+                  onError={(e) => {
                     e.currentTarget.src = '/items/default-item.png'
                   }}
                 />
               </div>
-
-              <div className="p-4 space-y-4">
-                <div className="flex justify-between items-start">
-                  <h1 className="text-xl font-bold text-white">{item.InternalName}</h1>
-                  <span className={`
-                    px-2 py-1 rounded-full text-sm font-medium
-                    ${item.Size === 'Small' ? 'bg-green-500/20 text-green-300 ring-1 ring-green-500/50' :
-                      item.Size === 'Medium' ? 'bg-blue-500/20 text-blue-300 ring-1 ring-blue-500/50' :
-                      'bg-purple-500/20 text-purple-300 ring-1 ring-purple-500/50'}
-                  `}>
-                    {item.Size}
-                  </span>
-                </div>
-
-                <div className="flex flex-wrap gap-2">
-                  {item.Tags.map((tag, index) => (
-                    <span 
-                      key={index}
-                      className="flex items-center gap-1 px-2 py-1 rounded-lg bg-gray-700/50 text-gray-300 text-sm"
-                    >
-                      <span className="text-lg">{tagIcons[tag]}</span>
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-
-                {item.Heroes.length > 0 && item.Heroes[0] !== 'Common' && (
-                  <div className="flex flex-wrap gap-2">
-                    {item.Heroes.map((hero, index) => {
-                      const colors = heroColors[hero as keyof typeof heroColors] || heroColors.Common;
-                      return (
-                        <span 
-                          key={index}
-                          className={`
-                            text-sm px-2 py-1 rounded-lg ring-1
-                            ${colors.bg} ${colors.text} ${colors.ring}
-                          `}
-                        >
-                          👑 {hero}
-                        </span>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
             </div>
+
+            {/* Meta Score */}
+            <MetaScore item={item} />
+
+            {/* Heroes */}
+            {item.Heroes.length > 0 && item.Heroes[0] !== 'Common' && (
+              <div className="bg-gray-800 rounded-lg p-4">
+                <h3 className="text-lg font-semibold text-white mb-3">Available for Heroes</h3>
+                <div className="flex flex-wrap gap-2">
+                  {item.Heroes.map((hero, index) => {
+                    const colors = heroColors[hero as keyof typeof heroColors] || heroColors.Common
+                    return (
+                      <span 
+                        key={index}
+                        className={`
+                          px-4 py-2 rounded-lg text-sm
+                          ${colors.bg} ${colors.text} ${colors.ring}
+                        `}
+                      >
+                        👑 {hero}
+                      </span>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
           </div>
 
+          {/* Right Column - Stats and Details */}
           <div className="lg:col-span-2 space-y-6">
-            <div className="bg-gray-800 rounded-xl p-4">
-              <h2 className="text-lg font-semibold text-white mb-4">Tier Information</h2>
-              <div className="flex gap-2 mb-4">
+            {/* Tier Selection */}
+            <div className="bg-gray-800 rounded-lg p-6">
+              <div className="flex flex-wrap gap-2 mb-6">
                 {tiers.map(tier => (
                   <button
                     key={tier}
                     onClick={() => setSelectedTier(tier)}
                     className={`
-                      px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200
+                      px-4 py-2 rounded-lg text-sm font-medium transition-all flex-1 sm:flex-none
                       ${tier === selectedTier 
-                        ? `${getTierColor(tier)} ring-1 ring-current bg-gray-700/30` 
-                        : 'text-gray-400 hover:text-gray-200 hover:bg-gray-700/20'}
+                        ? `bg-gray-700 text-white ring-1 ring-blue-500` 
+                        : 'text-gray-400 hover:text-gray-200 bg-gray-900'
+                      }
                     `}
                   >
                     {tier}
@@ -248,87 +220,49 @@ export default function CardDetailsContent({ params }: CardDetailsProps) {
               </div>
 
               {currentTierData && (
-                <div className="space-y-6">
-                  <div>
-                    <h3 className="text-blue-400 font-semibold mb-3">Attributes</h3>
-                    <div className="grid grid-cols-2 gap-3">
-                      {Object.entries(currentTierData.Attributes)
-                        .filter(([key]) => key !== 'CooldownMax')
-                        .map(([key, value]) => {
-                          const iconInfo = attributeIcons[key]
-                          if (!iconInfo) return null
-
-                          return (
-                            <div 
-                              key={key}
-                              className="flex items-center gap-3 bg-gray-700/30 rounded-lg p-3"
-                              title={iconInfo.label}
-                            >
-                              <span className="text-2xl">{iconInfo.icon}</span>
-                              <div className="flex flex-col">
-                                <span className="text-sm text-gray-400">{iconInfo.label}</span>
-                                <span className="text-white font-medium">
-                                  {key === 'Custom_0' 
-                                    ? decipherCustomAttribute(key, value as number, item.Tags)
-                                    : value
-                                  }
-                                </span>
-                              </div>
-                            </div>
-                          )
-                        })}
-                    </div>
-                  </div>
-
-                  {currentTierData.tooltips && (
-                    <div>
-                      <h3 className="text-green-400 font-semibold mb-3">Effects</h3>
-                      <div className="space-y-3">
-                        {currentTierData.tooltips.map((tooltip, index) => {
-                          const tooltipContent = typeof tooltip === 'string' 
-                            ? tooltip 
-                            : tooltip?.Content?.Text || '';
-                          const tooltipType = typeof tooltip === 'string' 
-                            ? '' 
-                            : tooltip?.TooltipType || '';
-
-                          return (
-                            <div 
-                              key={index}
-                              className="flex items-start gap-3 bg-gray-700/30 rounded-lg p-4"
-                            >
-                              <span className="text-xl mt-0.5">
-                                {tooltipType === 'Active' ? '🎯' : 
-                                 tooltipType === 'Passive' ? '✨' : '📜'}
-                              </span>
-                              <div className="flex-1">
-                                <div className="text-gray-300">{tooltipContent}</div>
-                                {tooltipType && (
-                                  <div className="text-sm text-gray-500 mt-2">{tooltipType}</div>
-                                )}
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  )}
-                </div>
+                <TierDetails 
+                  tier={selectedTier}
+                  data={currentTierData}
+                  showComparison={tierIndex > 0}
+                  previousTierData={previousTierData}
+                />
               )}
             </div>
 
-            {relatedBuilds.length > 0 && (
-              <div className="bg-gray-800 rounded-xl p-4">
-                <h2 className="text-lg font-semibold text-white mb-4">Related Builds</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {relatedBuilds.map((build, index) => (
+            {/* Encounters */}
+            {dropsFrom.length > 0 && (
+              <div className="bg-gray-800 rounded-lg p-6">
+                <h3 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
+                  <Skull className="w-5 h-5" />
+                  Drops From
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {dropsFrom.map((encounter) => (
                     <Link 
-                      key={index}
-                      href={`/builds/${build.id}`}
-                      className="bg-gray-700/30 rounded-lg p-4 hover:bg-gray-700/50 transition-colors"
+                      key={encounter.id}
+                      href={`/encounters?searchQuery=${encodeURIComponent(encounter.name)}`}
+                      className="group relative overflow-hidden rounded-lg"
                     >
-                      <h3 className="text-white font-medium mb-2">{build.name}</h3>
-                      <p className="text-sm text-gray-400">{build.description}</p>
+                      <div className="absolute inset-0">
+                        <img
+                          src={getEncounterImage(encounter.name)}
+                          alt={encounter.name}
+                          className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                          onError={(e) => {
+                            e.currentTarget.src = '/encounters/default-encounter.webp'
+                          }}
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/50 to-transparent" />
+                      </div>
+                      <div className="relative p-4 flex items-center justify-between">
+                        <div>
+                          <div className="font-medium text-white group-hover:text-blue-300 transition-colors">
+                            {encounter.name}
+                          </div>
+                          <div className="text-sm text-gray-400">Level {encounter.Level}</div>
+                        </div>
+                        <Icon icon={ArrowRight} className="w-5 h-5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                      </div>
                     </Link>
                   ))}
                 </div>
@@ -337,114 +271,134 @@ export default function CardDetailsContent({ params }: CardDetailsProps) {
           </div>
         </div>
       </div>
+    </div>
+  )
+}
 
-      <div className="bg-gray-800 rounded-xl p-6 space-y-6">
-        <div className="flex items-center justify-between">
-          <h2 className="text-xl font-bold text-white">Card Statistics</h2>
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-gray-400">Meta Score</span>
-            <span className={`
-              text-lg font-bold px-3 py-1 rounded-full
-              ${statistics.metaScore >= 80 ? 'bg-green-500/20 text-green-300' :
-                statistics.metaScore >= 60 ? 'bg-blue-500/20 text-blue-300' :
-                statistics.metaScore >= 40 ? 'bg-yellow-500/20 text-yellow-300' :
-                'bg-red-500/20 text-red-300'}
-            `}>
-              {statistics.metaScore}/100
-            </span>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-3 gap-4">
-          <div className="bg-gray-700/30 rounded-lg p-4">
-            <div className="text-sm text-gray-400">Popularity</div>
-            <div className="text-2xl font-bold text-white">{statistics.popularityScore}%</div>
-          </div>
-          <div className="bg-gray-700/30 rounded-lg p-4">
-            <div className="text-sm text-gray-400">Win Rate</div>
-            <div className="text-2xl font-bold text-white">{statistics.winRate}%</div>
-          </div>
-          <div className="bg-gray-700/30 rounded-lg p-4">
-            <div className="text-sm text-gray-400">Pick Rate</div>
-            <div className="text-2xl font-bold text-white">{statistics.pickRate}%</div>
-          </div>
-        </div>
-
-        <div>
-          <h3 className="text-lg font-semibold text-blue-400 mb-4">Popular Builds</h3>
-          <div className="space-y-3">
-            {statistics.topBuilds.length > 0 ? (
-              statistics.topBuilds.map((build, index) => (
-                <Link 
-                  key={build.id}
-                  href={`/builds/${build.id}`}
-                  className="flex items-center justify-between p-4 bg-gray-700/30 rounded-lg hover:bg-gray-700/50 transition-colors"
-                >
-                  <div className="flex items-center gap-4">
-                    <span className="text-2xl font-bold text-gray-500">#{index + 1}</span>
-                    <div>
-                      <div className="font-medium text-white">{build.name}</div>
-                      <div className="text-sm text-gray-400">by {build.author}</div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    <div className="text-sm text-gray-400">
-                      <span className="text-yellow-400">★</span> {build.votes}
-                    </div>
-                    <div className="text-sm text-green-400">{build.winRate}% WR</div>
-                  </div>
-                </Link>
-              ))
-            ) : (
-              <div className="text-center py-8 text-gray-400">
-                <div className="text-4xl mb-2">📊</div>
-                <div className="font-medium">No builds yet</div>
-                <div className="text-sm">Be the first to create a build with this card!</div>
-              </div>
-            )}
-          </div>
-        </div>
+// Update TierDetails component to be more responsive
+function TierDetails({ tier, data, showComparison = false, previousTierData = null }) {
+  return (
+    <div className="space-y-6">
+      {/* Combat Stats */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {formatStat(
+          'Damage', 
+          data.Attributes.DamageAmount,
+          previousTierData?.Attributes.DamageAmount,
+          Sword
+        )}
+        {formatStat(
+          'Cast Time', 
+          data.Attributes.CooldownMax,
+          previousTierData?.Attributes.CooldownMax,
+          Clock,
+          (val) => `${(val / 1000).toFixed(1)}s`
+        )}
+        {formatStat(
+          'Multicast', 
+          data.Attributes.Multicast,
+          previousTierData?.Attributes.Multicast,
+          Zap
+        )}
+        {/* Add other persistent stats here */}
       </div>
 
-      <div className="bg-gray-800 rounded-xl p-6">
-        <h2 className="text-xl font-bold text-white mb-4">Changelog</h2>
-        <div className="space-y-4">
-          {changelog.map((entry, index) => (
-            <div key={index} className="border-l-2 border-gray-700 pl-4">
-              <div className="flex items-center gap-2 mb-2">
-                <span className="text-sm font-medium text-gray-400">
-                  {entry.date}
-                </span>
-                <span className="text-xs px-2 py-1 rounded-full bg-gray-700 text-gray-300">
-                  v{entry.version}
-                </span>
-              </div>
-              <div className="space-y-2">
-                {entry.changes.map((change, changeIndex) => (
-                  <div 
-                    key={changeIndex}
-                    className="flex items-start gap-2"
-                  >
-                    <span className="mt-1">
-                      {change.type === 'buff' ? '⬆️' :
-                       change.type === 'nerf' ? '⬇️' :
-                       change.type === 'bugfix' ? '🐛' : '📝'}
-                    </span>
-                    <span className={`
-                      text-sm
-                      ${change.type === 'buff' ? 'text-green-400' :
-                        change.type === 'nerf' ? 'text-red-400' :
-                        change.type === 'bugfix' ? 'text-blue-400' :
-                        'text-gray-300'}
-                    `}>
-                      {change.description}
-                    </span>
+      {/* Economy */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {formatStat(
+          'Buy Price', 
+          data.Attributes.BuyPrice,
+          previousTierData?.Attributes.BuyPrice,
+          Coins
+        )}
+        {formatStat(
+          'Sell Value', 
+          data.Attributes.SellPrice,
+          previousTierData?.Attributes.SellPrice,
+          Coins
+        )}
+      </div>
+
+      {/* Effects & Abilities */}
+      {data.tooltips && data.tooltips.length > 0 && (
+        <div className="space-y-3">
+          <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+            <Star className="w-5 h-5" />
+            Effects & Abilities
+          </h3>
+          <div className="grid grid-cols-1 gap-3">
+            {data.tooltips.map((tooltip: any, index: number) => {
+              const tooltipContent = typeof tooltip === 'string' 
+                ? tooltip 
+                : tooltip?.Content?.Text || '';
+              const tooltipType = typeof tooltip === 'string' 
+                ? '' 
+                : tooltip?.TooltipType || '';
+
+              return (
+                <div 
+                  key={index}
+                  className="bg-gray-900 rounded-lg p-4"
+                >
+                  <div className="flex items-start gap-3">
+                    <Icon 
+                      icon={tooltipType === 'Active' ? Sword : 
+                            tooltipType === 'Passive' ? Shield : Star} 
+                      className="w-5 h-5 mt-1"
+                    />
+                    <div>
+                      <div className="text-gray-300">{tooltipContent}</div>
+                      {tooltipType && (
+                        <div className="text-sm text-gray-500 mt-1">{tooltipType}</div>
+                      )}
+                    </div>
                   </div>
-                ))}
-              </div>
-            </div>
-          ))}
+                </div>
+              );
+            })}
+          </div>
         </div>
+      )}
+    </div>
+  )
+}
+
+// Helper function to get encounter image
+function getEncounterImage(encounterName: string) {
+  const formattedName = encounterName
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, '')
+    .replace(/\s+/g, '-')
+  return `/encounters/${formattedName}.webp`
+}
+
+// Helper to format persistent stats
+function formatStat(
+  label: string, 
+  value: number | undefined, 
+  prevValue: number | undefined, 
+  icon: LucideIcon,
+  formatter?: (val: number) => string
+) {
+  if (!value) return null
+  
+  const formattedValue = formatter ? formatter(value) : value
+  const difference = prevValue ? value - prevValue : 0
+  const showDifference = prevValue && difference !== 0
+
+  return (
+    <div className="bg-gray-900 rounded-lg p-4">
+      <div className="flex items-center gap-2 text-sm text-gray-400">
+        <Icon icon={icon} className="w-4 h-4" />
+        {label}
+      </div>
+      <div className="text-xl text-white">
+        {formattedValue}
+        {showDifference && (
+          <span className={`text-sm ml-2 ${difference > 0 ? 'text-green-400' : 'text-red-400'}`}>
+            {difference > 0 ? '+' : ''}{formatter ? formatter(difference) : difference}
+          </span>
+        )}
       </div>
     </div>
   )

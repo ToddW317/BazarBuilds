@@ -1,11 +1,15 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { Encounter, EncounterData, Item, ExtendedItem, Tooltip, Skill } from '@/types/encounters'
 import encounterData from '@/data/out.json'
 import WIPBadge from '@/components/WIPBadge'
 import CreditBanner from '@/components/CreditBanner'
 import { attributeIcons, tagIcons, decipherCustomAttribute } from '@/utils/cardIcons'
+import { ChevronDown, Crown, Eye, Heart } from 'lucide-react'
+import Icon from '@/components/ui/Icon'
+import Link from 'next/link'
 
 const heroColors = {
   'Jules': {
@@ -206,6 +210,11 @@ function EncounterCard({ encounter, items }: { encounter: Encounter, items: Reco
     return '/items/default-item.png';
   };
 
+  // Get item details when needed
+  const getItemDetails = (itemId: string) => {
+    return items?.[itemId] || null
+  }
+
   return (
     <div className={`
       bg-gray-800 rounded-xl overflow-hidden transition-all
@@ -232,7 +241,9 @@ function EncounterCard({ encounter, items }: { encounter: Encounter, items: Reco
         <div className="flex justify-between items-start gap-4">
           <div className="flex items-center gap-2">
             {isBoss && (
-              <span className="text-2xl" title="Boss">👑</span>
+              <span title="Boss">
+                <Icon icon={Crown} className="w-6 h-6 text-purple-400" />
+              </span>
             )}
             <h3 className={`text-xl font-bold ${isBoss ? 'text-purple-200' : 'text-white'}`}>
               {encounter.name}
@@ -265,14 +276,10 @@ function EncounterCard({ encounter, items }: { encounter: Encounter, items: Reco
           `}
         >
           <span>{isExpanded ? 'Hide Details' : 'Show Details'}</span>
-          <svg 
+          <Icon 
+            icon={ChevronDown}
             className={`w-5 h-5 transform transition-transform ${isExpanded ? 'rotate-180' : ''}`}
-            fill="none" 
-            viewBox="0 0 24 24" 
-            stroke="currentColor"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-          </svg>
+          />
         </button>
       </div>
 
@@ -328,23 +335,19 @@ function EncounterCard({ encounter, items }: { encounter: Encounter, items: Reco
           )}
 
           {/* Items Section */}
-          <div>
-            <h4 className="text-lg font-semibold text-yellow-400 mb-3">Items</h4>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {encounter.Items.map((item, index) => {
-                const itemDetails = items[item.ItemID];
-                const currentTierData = itemDetails?.Tiers[item.Tier];
-                
-                return (
-                  <div 
-                    key={index} 
-                    className="relative group hover:z-[9999]"
-                    style={{ isolation: 'isolate' }}
-                  >
-                    <div 
-                      onClick={() => window.open(`/cards/${item.ItemID}`, '_blank')}
-                      className="bg-gray-800 rounded-lg overflow-hidden border border-gray-700 cursor-pointer 
-                        hover:border-blue-500/50 transition-all duration-200"
+          {encounter.Items && encounter.Items.length > 0 && (
+            <div>
+              <h4 className="text-lg font-semibold text-blue-400 mb-3">Items</h4>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {encounter.Items.map((item, index) => {
+                  const itemDetails = getItemDetails(item.ItemID)
+                  if (!itemDetails) return null
+
+                  return (
+                    <Link 
+                      key={index}
+                      href={`/cards/${item.ItemID}`}
+                      className="group bg-gray-900 rounded-lg overflow-hidden transition-all hover:ring-2 hover:ring-blue-500/50"
                     >
                       {/* Card Header with Image */}
                       <div className="relative">
@@ -352,7 +355,7 @@ function EncounterCard({ encounter, items }: { encounter: Encounter, items: Reco
                           <img
                             src={getItemImageUrl(item.ItemID)}
                             alt={item.Name}
-                            className="absolute inset-0 w-full h-full object-contain bg-gray-900"
+                            className="absolute inset-0 w-full h-full object-contain bg-gray-900 transition-transform group-hover:scale-105"
                             onError={(e) => {
                               const currentSrc = e.currentTarget.src;
                               if (!currentSrc.includes('default-item')) {
@@ -391,42 +394,47 @@ function EncounterCard({ encounter, items }: { encounter: Encounter, items: Reco
                       {/* Card Content */}
                       <div className="p-3 space-y-3">
                         {/* Tags */}
-                        {itemDetails && (
+                        {itemDetails.Tags && itemDetails.Tags.length > 0 && (
                           <div className="flex flex-wrap gap-1">
-                            {itemDetails.Tags.map((tag, i) => (
-                              <span 
-                                key={i} 
-                                className="inline-flex items-center text-xs px-1.5 py-0.5 rounded bg-gray-700/50 text-gray-300"
-                                title={tag}
-                              >
-                                {tagIcons[tag]} {tag}
-                              </span>
-                            ))}
+                            {itemDetails.Tags.map((tag: string, i: number) => {
+                              const TagIcon = tagIcons[tag]
+                              return (
+                                <span 
+                                  key={i} 
+                                  className="inline-flex items-center gap-1 text-xs px-1.5 py-0.5 rounded bg-gray-700/50 text-gray-300"
+                                >
+                                  {TagIcon && <Icon icon={TagIcon} className="w-3 h-3" />}
+                                  <span>{tag}</span>
+                                </span>
+                              )
+                            })}
                           </div>
                         )}
 
                         {/* Attributes */}
-                        {currentTierData && (
+                        {itemDetails.Attributes && (
                           <div className="grid grid-cols-2 gap-1.5 text-sm">
-                            {Object.entries(currentTierData.Attributes)
+                            {Object.entries(itemDetails.Attributes)
                               .filter(([key]) => key !== 'CooldownMax')
                               .map(([key, value]) => {
-                                const iconInfo = attributeIcons[key]
-                                if (!iconInfo) return null
+                                const IconComponent = attributeIcons[key]?.icon
+                                if (!IconComponent) return null
 
                                 return (
                                   <div 
                                     key={key}
                                     className="flex items-center gap-1.5 bg-gray-700/30 rounded p-1.5"
-                                    title={iconInfo.label}
                                   >
-                                    <span className="text-base">{iconInfo.icon}</span>
-                                    <span className="text-white">
-                                      {key === 'Custom_0' 
-                                        ? decipherCustomAttribute(key, value as number, itemDetails?.Tags || [])
-                                        : value
-                                      }
-                                    </span>
+                                    <Icon icon={IconComponent} className="w-4 h-4" />
+                                    <div className="flex flex-col">
+                                      <span className="text-xs text-gray-400">{attributeIcons[key].label}</span>
+                                      <span className="text-white">
+                                        {key === 'Custom_0' 
+                                          ? decipherCustomAttribute(key, value as number, itemDetails?.Tags || [])
+                                          : value
+                                        }
+                                      </span>
+                                    </div>
                                   </div>
                                 )
                               })}
@@ -434,9 +442,9 @@ function EncounterCard({ encounter, items }: { encounter: Encounter, items: Reco
                         )}
 
                         {/* Effects/Tooltips */}
-                        {currentTierData?.tooltips && (
+                        {itemDetails.tooltips && (
                           <div className="space-y-1">
-                            {currentTierData.tooltips.map((tooltip, index) => {
+                            {itemDetails.tooltips.map((tooltip, index) => {
                               const tooltipContent = typeof tooltip === 'string' 
                                 ? tooltip 
                                 : tooltip?.Content?.Text || '';
@@ -463,7 +471,7 @@ function EncounterCard({ encounter, items }: { encounter: Encounter, items: Reco
                         )}
 
                         {/* Heroes */}
-                        {itemDetails?.Heroes.length > 0 && itemDetails.Heroes[0] !== 'Common' && (
+                        {itemDetails.Heroes.length > 0 && itemDetails.Heroes[0] !== 'Common' && (
                           <div className="flex flex-wrap gap-1">
                             {itemDetails.Heroes.map((hero, index) => {
                               const colors = heroColors[hero as keyof typeof heroColors] || heroColors.Common;
@@ -492,20 +500,12 @@ function EncounterCard({ encounter, items }: { encounter: Encounter, items: Reco
                           </div>
                         )}
                       </div>
-                    </div>
-
-                    {/* Add hover card */}
-                    <ItemCardHover 
-                      item={item}
-                      itemDetails={itemDetails}
-                      currentTierData={currentTierData}
-                      getItemImageUrl={getItemImageUrl}
-                    />
-                  </div>
-                );
-              })}
+                    </Link>
+                  )
+                })}
+              </div>
             </div>
-          </div>
+          )}
         </div>
       )}
     </div>
@@ -739,11 +739,20 @@ function ItemCardHover({
 }
 
 export default function EncountersPage() {
+  const searchParams = useSearchParams()
   const [selectedLevel, setSelectedLevel] = useState<number>(0)
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedTier, setSelectedTier] = useState<string>('')
   const [selectedTag, setSelectedTag] = useState<string>('')
   const [showBossesOnly, setShowBossesOnly] = useState(false)
+
+  // Add effect to handle URL search params
+  useEffect(() => {
+    const queryParam = searchParams.get('searchQuery')
+    if (queryParam) {
+      setSearchQuery(queryParam)
+    }
+  }, [searchParams])
 
   const filteredEncounters = useMemo(() => {
     return parsedEncounters.filter(encounter => {

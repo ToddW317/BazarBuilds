@@ -7,6 +7,8 @@ import { useAuth } from '@/contexts/AuthContext'
 import { toggleBuildLike } from '@/lib/buildService'
 import { useState } from 'react'
 import { HEROES } from '@/config/heroes'
+import { Eye, Heart } from 'lucide-react'
+import Icon from '@/components/ui/Icon'
 
 interface BuildCardProps {
   build: Build
@@ -38,12 +40,7 @@ export default function BuildCard({ build }: BuildCardProps) {
   const [isLiked, setIsLiked] = useState(user ? likedBy.includes(user.uid) : false)
   const [likeCount, setLikeCount] = useState(build?.likes || 0)
   const hero = HEROES.find(h => h.id === build.heroId)
-
-  const rating = build.rating?.average ? 
-    Math.round(build.rating.average * 10) / 10 : 
-    0
-
-  const heroStyle = HERO_STYLES[build.heroId]
+  const heroStyle = HERO_STYLES[build.heroId as keyof typeof HERO_STYLES]
 
   const handleLike = async () => {
     if (!user) return
@@ -93,14 +90,6 @@ export default function BuildCard({ build }: BuildCardProps) {
           <div className="flex items-start justify-between mb-auto">
             <div>
               <h3 className="font-bold text-lg mb-1 truncate text-white">{build.title}</h3>
-              {build.rating?.count > 0 && (
-                <div className="flex items-center text-sm text-yellow-400">
-                  <span>★ {rating}</span>
-                  <span className="text-gray-400 text-xs ml-1">
-                    ({build.rating.count})
-                  </span>
-                </div>
-              )}
             </div>
             <span className={`px-2 py-1 text-xs rounded-full ${
               build.buildType === 'Aggro' ? 'bg-red-900 text-red-200' :
@@ -136,31 +125,13 @@ export default function BuildCard({ build }: BuildCardProps) {
                   isLiked ? 'text-red-400' : 'hover:text-red-400'
                 } transition-colors`}
               >
-                <span>{isLiked ? '❤️' : '🤍'}</span>
+                <Icon icon={Heart} className="w-4 h-4" />
                 <span>{likeCount}</span>
               </button>
-              <div className="flex items-center space-x-1 text-gray-400">
-                <svg 
-                  className="w-4 h-4" 
-                  fill="none" 
-                  stroke="currentColor" 
-                  viewBox="0 0 24 24"
-                >
-                  <path 
-                    strokeLinecap="round" 
-                    strokeLinejoin="round" 
-                    strokeWidth={2} 
-                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                  />
-                  <path 
-                    strokeLinecap="round" 
-                    strokeLinejoin="round" 
-                    strokeWidth={2} 
-                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                  />
-                </svg>
+              <span className="flex items-center">
+                <Icon icon={Eye} className="w-4 h-4 mr-1" />
                 <span>{build.views || 0}</span>
-              </div>
+              </span>
             </div>
             <div className="flex items-center">
               <span className="text-gray-300">{build.creatorName || 'Anonymous'}</span>

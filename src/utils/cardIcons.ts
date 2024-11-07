@@ -1,33 +1,69 @@
-export const attributeIcons: Record<string, { icon: string; label: string }> = {
-  DamageAmount: { icon: '⚔️', label: 'Damage' },
-  HealAmount: { icon: '💖', label: 'Heal' },
-  ShieldApplyAmount: { icon: '🛡️', label: 'Shield' },
-  SlowAmount: { icon: '🐌', label: 'Slow Duration' },
-  SlowTargets: { icon: '🎯', label: 'Slow Targets' },
-  FreezeAmount: { icon: '❄️', label: 'Freeze Duration' },
-  FreezeTargets: { icon: '🎯', label: 'Freeze Targets' },
-  BuyPrice: { icon: '💰', label: 'Buy' },
-  SellPrice: { icon: '💎', label: 'Sell' },
-  Multicast: { icon: '🔄', label: 'Multicast' },
-  Custom_0: { icon: '✨', label: 'Special' },
-  PoisonAmount: { icon: '☠️', label: 'Poison' },
-  BurnAmount: { icon: '🔥', label: 'Burn' }
+import { 
+  Coins, 
+  Clock, 
+  Zap, 
+  Sword, 
+  Shield, 
+  Heart, 
+  Star, 
+  Sparkles,
+  Tag,
+  Flame,
+  Target,
+  Bolt,
+  Droplet,
+  Crown,
+  Skull,
+  Gauge,
+  LucideIcon
+} from 'lucide-react'
+
+export const attributeIcons: Record<string, { icon: LucideIcon; label: string }> = {
+  BuyPrice: { icon: Coins, label: 'Buy Price' },
+  SellPrice: { icon: Coins, label: 'Sell Price' },
+  CooldownMax: { icon: Clock, label: 'Cooldown' },
+  Multicast: { icon: Zap, label: 'Multicast' },
+  DamageAmount: { icon: Sword, label: 'Damage' },
+  DefenseAmount: { icon: Shield, label: 'Defense' },
+  HealthAmount: { icon: Heart, label: 'Health' },
+  Custom_0: { icon: Star, label: 'Special' }
 }
 
-export const tagIcons: Record<string, string> = {
-  Weapon: '⚔️',
-  Tool: '🔧',
-  Food: '🍎',
-  Property: '🏠',
-  Vehicle: '🚗',
-  Aquatic: '🌊',
-  // Add more as needed
+export const tagIcons: Record<string, LucideIcon> = {
+  'Damage': Sword,
+  'Defense': Shield,
+  'Health': Heart,
+  'Utility': Star,
+  'Buff': Sparkles,
+  'Tag': Tag,
+  'Fire': Flame,
+  'Ranged': Target,
+  'Lightning': Bolt,
+  'Water': Droplet,
+  'Royal': Crown,
+  'Death': Skull,
+  'Speed': Gauge
 }
 
-export function decipherCustomAttribute(key: string, value: number, itemTags: string[]): string {
-  // Logic to figure out what Custom_0 means based on tags and value
-  if (itemTags.includes('Weapon')) return `Damage: ${value}`
-  if (itemTags.includes('Food')) return `Heal: ${value}`
-  if (itemTags.includes('Tool')) return `Effect: ${value}`
-  return `Value: ${value}`
+export function decipherCustomAttribute(key: string, value: number, tags: string[]): string {
+  // Handle Custom_0 attribute based on item tags
+  if (key === 'Custom_0') {
+    if (tags.includes('Damage')) {
+      return `${value}% Damage`
+    }
+    if (tags.includes('Defense')) {
+      return `${value}% Defense`
+    }
+    if (tags.includes('Health')) {
+      return `${value}% Health`
+    }
+    if (tags.includes('Speed')) {
+      return `${value}% Speed`
+    }
+    // Default case if no matching tag
+    return `${value}%`
+  }
+  
+  // Return the raw value for other custom attributes
+  return value.toString()
 } 
