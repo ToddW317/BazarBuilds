@@ -9,7 +9,6 @@ import BuildsFilterSidebar from '@/components/BuildsFilterSidebar'
 import BuildsNavigation from '@/components/BuildsNavigation'
 import GoogleAd from '@/components/GoogleAd'
 import BuildsDisabledBanner from '@/components/BuildsDisabledBanner'
-import WIPBadge from '@/components/WIPBadge'
 import { trackEvent } from '@/lib/analytics'
 
 export default function BuildsPage() {
@@ -128,75 +127,72 @@ export default function BuildsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 relative">
-      <WIPBadge />
-      <div className="max-w-7xl mx-auto p-6">
-        <BuildsDisabledBanner />
-        {/* Top ad */}
-        <GoogleAd slot="YOUR_AD_SLOT_1" />
+    <div className="max-w-7xl mx-auto p-6">
+      <BuildsDisabledBanner />
+      {/* Top ad */}
+      <GoogleAd slot="YOUR_AD_SLOT_1" />
 
-        <div className="flex flex-col md:flex-row justify-between items-center mb-8">
-          <div>
-            <h1 className="text-3xl font-bold mb-2">Community Builds</h1>
-            <p className="text-gray-400">Discover and share the best builds for The Bazaar</p>
-          </div>
-          
-          <Link 
-            href="/builds/new"
-            className="mt-4 md:mt-0 bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition-colors"
-          >
-            Submit Build
-          </Link>
+      <div className="flex flex-col md:flex-row justify-between items-center mb-8">
+        <div>
+          <h1 className="text-3xl font-bold mb-2">Community Builds</h1>
+          <p className="text-gray-400">Discover and share the best builds for The Bazaar</p>
         </div>
-
-        <BuildsNavigation />
         
-        <div className="flex flex-col md:flex-row gap-6 mt-6">
-          <BuildsFilterSidebar 
-            className="md:w-64 flex-shrink-0"
-            onSortChange={handleSortChange}
-            onTagSearch={handleTagSearch}
-            onHeroFilter={handleHeroFilter}
-            onBuildTypeFilter={handleBuildTypeFilter}
-            onDifficultyFilter={handleDifficultyFilter}
-            activeFilters={{
-              hero: selectedHero,
-              buildType: selectedBuildType,
-              difficulty: selectedDifficulty,
-              tag: searchTag,
-              sort: currentSort
-            }}
-          />
+        <Link 
+          href="/builds/new"
+          className="mt-4 md:mt-0 bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition-colors"
+        >
+          Submit Build
+        </Link>
+      </div>
 
-          <div className="flex-grow">
-            {/* Ad before content */}
-            <GoogleAd slot="YOUR_AD_SLOT_2" />
+      <BuildsNavigation />
+      
+      <div className="flex flex-col md:flex-row gap-6 mt-6">
+        <BuildsFilterSidebar 
+          className="md:w-64 flex-shrink-0"
+          onSortChange={handleSortChange}
+          onTagSearch={handleTagSearch}
+          onHeroFilter={handleHeroFilter}
+          onBuildTypeFilter={handleBuildTypeFilter}
+          onDifficultyFilter={handleDifficultyFilter}
+          activeFilters={{
+            hero: selectedHero,
+            buildType: selectedBuildType,
+            difficulty: selectedDifficulty,
+            tag: searchTag,
+            sort: currentSort
+          }}
+        />
 
-            {isLoading ? (
-              <div className="text-center py-12">
-                <p className="text-gray-400">Loading builds...</p>
-              </div>
-            ) : filteredBuilds.length === 0 ? (
-              <div className="text-center py-12">
-                <p className="text-gray-400">No builds found matching your filters</p>
-                <button
-                  onClick={clearFilters}
-                  className="mt-4 text-blue-400 hover:text-blue-300 transition-colors"
-                >
-                  Clear all filters
-                </button>
-              </div>
-            ) : (
-              <>
-                <BuildsGrid initialBuilds={filteredBuilds} />
-                {/* Ad after content */}
-                <GoogleAd slot="YOUR_AD_SLOT_3" />
-              </>
-            )}
+        <div className="flex-grow">
+          {/* Ad before content */}
+          <GoogleAd slot="YOUR_AD_SLOT_2" />
 
-            {/* Bottom ad */}
-            <GoogleAd slot="YOUR_AD_SLOT_4" />
-          </div>
+          {isLoading ? (
+            <div className="text-center py-12">
+              <p className="text-gray-400">Loading builds...</p>
+            </div>
+          ) : filteredBuilds.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-gray-400">No builds found matching your filters</p>
+              <button
+                onClick={clearFilters}
+                className="mt-4 text-blue-400 hover:text-blue-300 transition-colors"
+              >
+                Clear all filters
+              </button>
+            </div>
+          ) : (
+            <>
+              <BuildsGrid initialBuilds={filteredBuilds} />
+              {/* Ad after content */}
+              <GoogleAd slot="YOUR_AD_SLOT_3" />
+            </>
+          )}
+
+          {/* Bottom ad */}
+          <GoogleAd slot="YOUR_AD_SLOT_4" />
         </div>
       </div>
     </div>
