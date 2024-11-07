@@ -1,12 +1,25 @@
 'use client'
 
 import { useState, useMemo, useEffect } from 'react'
-import { Item } from '@/types/encounters'
+import { Item, CachedItems } from '@/types/encounters'
 import encounterData from '@/data/out.json'
 import { cacheData, getCachedData } from '@/utils/cache'
 import CardDisplay from '@/components/CardDisplay'
 import WIPBadge from '@/components/WIPBadge'
 import CreditBanner from '@/components/CreditBanner'
+
+// Add this interface for the tooltip type
+interface Tooltip {
+  Content: {
+    Text: string
+  }
+  TooltipType: string
+}
+
+interface TierData {
+  Attributes: Record<string, any>
+  tooltips?: Tooltip[]  // Make sure tooltips is properly typed
+}
 
 function getTierColor(tier: string) {
   switch (tier) {
@@ -19,11 +32,17 @@ function getTierColor(tier: string) {
   }
 }
 
+// Update your component code to use type assertion or type guard
 function CardDetails({ item, itemId }: { item: Item, itemId: string }) {
   const [selectedTier, setSelectedTier] = useState<string>(item.StartingTier)
   const tiers = Object.keys(item.Tiers)
 
-  const currentTierData = item.Tiers[selectedTier as keyof typeof item.Tiers]
+  const currentTierData = item.Tiers[selectedTier as keyof typeof item.Tiers] as TierData
+
+  // Add a type guard for tooltips
+  const hasTooltips = (tooltip: any): tooltip is Tooltip => {
+    return tooltip && typeof tooltip.Content === 'object' && typeof tooltip.Content.Text === 'string'
+  }
 
   return (
     <div className="bg-gray-800 rounded-xl overflow-hidden">
@@ -86,7 +105,7 @@ function CardDetails({ item, itemId }: { item: Item, itemId: string }) {
             <div>
               <h4 className="text-lg font-semibold text-green-400 mb-2">Effects</h4>
               <div className="space-y-2">
-                {currentTierData.tooltips.map((tooltip, index) => (
+                {currentTierData.tooltips.filter(hasTooltips).map((tooltip, index) => (
                   <div 
                     key={index}
                     className="bg-gray-700/50 rounded-lg p-3"
@@ -126,18 +145,18 @@ export default function CardsPage() {
   const [selectedTag, setSelectedTag] = useState('')
   const [selectedSize, setSelectedSize] = useState('')
   const [selectedHero, setSelectedHero] = useState('')
-  const [cachedItems, setCachedItems] = useState<Record<string, Item> | null>(null)
+  const [cachedItems, setCachedItems] = useState<CachedItems | null>(null)
 
   // Initialize data from cache or file
   useEffect(() => {
-    const cached = getCachedData<Record<string, Item>>('cards')
+    const cached = getCachedData<CachedItems>('cards')
     if (cached) {
       console.log('Using cached card data')
       setCachedItems(cached)
     } else {
       console.log('Caching card data')
-      setCachedItems(encounterData.items)
-      cacheData('cards', encounterData.items)
+      setCachedItems(encounterData.items as CachedItems)
+      cacheData('cards', encounterData.items as CachedItems)
     }
   }, [])
 

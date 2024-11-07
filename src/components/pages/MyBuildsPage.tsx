@@ -11,11 +11,23 @@ import { Build } from '@/types/types'
 
 export default function MyBuildsPage() {
   const [builds, setBuilds] = useState<Build[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     const loadBuilds = async () => {
-      const loadedBuilds = await getBuilds()
-      setBuilds(loadedBuilds)
+      try {
+        setIsLoading(true)
+        setError(null)
+        const loadedBuilds = await getBuilds()
+        console.log('Loaded builds:', loadedBuilds.length)
+        setBuilds(loadedBuilds)
+      } catch (err) {
+        console.error('Error loading builds:', err)
+        setError('Failed to load builds')
+      } finally {
+        setIsLoading(false)
+      }
     }
     loadBuilds()
   }, [])
@@ -38,9 +50,17 @@ export default function MyBuildsPage() {
 
       <BuildsNavigation />
 
-      <Suspense fallback={<div>Loading your builds...</div>}>
+      {isLoading ? (
+        <div className="text-center py-12">
+          <p className="text-gray-300">Loading builds...</p>
+        </div>
+      ) : error ? (
+        <div className="text-center py-12">
+          <p className="text-red-400">{error}</p>
+        </div>
+      ) : (
         <MyBuildsGrid builds={builds} />
-      </Suspense>
+      )}
     </div>
   )
 } 

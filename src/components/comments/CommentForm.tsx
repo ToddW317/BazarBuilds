@@ -3,26 +3,28 @@
 import { useState } from 'react'
 
 interface CommentFormProps {
-  onSubmit: (content: string, parentId?: string | null) => Promise<void>
-  parentId?: string | null
-  autoFocus?: boolean
+  onSubmit: (content: string) => Promise<void>
+  placeholder?: string
+  submitLabel?: string
+  initialValue?: string
 }
 
-export default function CommentForm({ 
-  onSubmit, 
-  parentId = null,
-  autoFocus = false 
+export default function CommentForm({
+  onSubmit,
+  placeholder = 'Write a comment...',
+  submitLabel = 'Comment',
+  initialValue = ''
 }: CommentFormProps) {
-  const [content, setContent] = useState('')
+  const [content, setContent] = useState(initialValue)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!content.trim()) return
+    if (!content.trim() || isSubmitting) return
 
     try {
       setIsSubmitting(true)
-      await onSubmit(content, parentId)
+      await onSubmit(content)
       setContent('')
     } catch (error) {
       console.error('Error submitting comment:', error)
@@ -36,25 +38,21 @@ export default function CommentForm({
       <textarea
         value={content}
         onChange={(e) => setContent(e.target.value)}
-        placeholder="Write a comment..."
-        className="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg 
-          focus:ring-2 focus:ring-blue-500 focus:border-blue-500 
-          text-gray-100 placeholder-gray-400"
+        placeholder={placeholder}
+        className="w-full p-3 bg-gray-700 rounded-lg text-white placeholder-gray-400 
+          focus:outline-none focus:ring-2 focus:ring-blue-500"
         rows={3}
-        autoFocus={autoFocus}
-        disabled={isSubmitting}
-        required
-        maxLength={1000}
       />
       <div className="flex justify-end">
         <button
           type="submit"
-          disabled={isSubmitting || !content.trim()}
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg 
-            hover:bg-blue-700 disabled:opacity-50 disabled:hover:bg-blue-600 
-            transition-colors"
+          disabled={!content.trim() || isSubmitting}
+          className={`px-4 py-2 rounded-lg text-white 
+            ${!content.trim() || isSubmitting 
+              ? 'bg-gray-600 cursor-not-allowed' 
+              : 'bg-blue-500 hover:bg-blue-600'}`}
         >
-          {isSubmitting ? 'Posting...' : 'Post Comment'}
+          {isSubmitting ? 'Submitting...' : submitLabel}
         </button>
       </div>
     </form>

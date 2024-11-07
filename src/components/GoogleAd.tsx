@@ -1,33 +1,19 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useEffect } from 'react'
 
-interface GoogleAdProps {
-  className?: string
-}
-
-declare global {
-  interface Window {
-    adsbygoogle: any[]
-  }
-}
-
-const GoogleAd = ({ className = '' }: GoogleAdProps) => {
-  const advertRef = useRef<HTMLDivElement>(null)
-
+export default function GoogleAd() {
   useEffect(() => {
     try {
-      if (window.adsbygoogle) {
-        window.adsbygoogle.push({})
+      // Only initialize Google Auto Ads once
+      if (typeof window !== 'undefined' && !window.googletag) {
+        (window.adsbygoogle = window.adsbygoogle || []).push({})
       }
     } catch (err) {
-      console.error('AdSense error:', err)
+      console.error('Error initializing Google Ads:', err)
     }
   }, [])
 
-  return (
-    <div ref={advertRef} className={`adsbygoogle ${className}`} />
-  )
-}
-
-export default GoogleAd 
+  // Don't render anything since we're using Auto Ads
+  return null
+} 

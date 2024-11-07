@@ -11,9 +11,11 @@ export interface Hero {
 export interface Build {
   id: string
   title: string
-  heroId: HeroId
-  buildType: BuildType
   description: string
+  buildCode: string
+  heroId: string
+  heroName: string
+  buildType: BuildType
   screenshots: string[]
   videoClip?: string
   userId: string
@@ -43,16 +45,15 @@ export interface BuildFormData {
 }
 
 export interface Comment {
-  id: string
-  buildId: string
-  content: string
-  userId: string
-  userName: string
-  createdAt: Date
-  likes: number
-  likedBy: string[]
-  parentId?: string | null
-  replies?: Comment[]
+  id: string;
+  userId: string;
+  userName: string;
+  content: string;
+  createdAt: Date;
+  parentId: string | null;
+  likes: number;
+  likedBy: string[];
+  replies: Comment[];
 }
 
 export interface Rating {

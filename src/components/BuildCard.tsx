@@ -45,14 +45,13 @@ export default function BuildCard({ build }: BuildCardProps) {
 
   const heroStyle = HERO_STYLES[build.heroId]
 
-  const handleLike = async (e: React.MouseEvent) => {
-    e.preventDefault()
+  const handleLike = async () => {
     if (!user) return
 
     try {
       const liked = await toggleBuildLike(build.id, user.uid)
       setIsLiked(liked)
-      setLikeCount(prev => liked ? prev + 1 : prev - 1)
+      setLikeCount(prev => Math.max(0, liked ? prev + 1 : prev - 1))
     } catch (error) {
       console.error('Error toggling like:', error)
     }

@@ -1,8 +1,8 @@
-import { Analytics, logEvent } from 'firebase/analytics';
 import { analytics } from './firebase';
+import { logEvent as firebaseLogEvent } from 'firebase/analytics';
 
-export const trackEvent = (eventName: string, eventParams?: Record<string, any>) => {
+export function trackEvent(eventName: string, eventParams?: Record<string, any>) {
   if (analytics) {
-    logEvent(analytics, eventName, eventParams);
+    firebaseLogEvent(analytics, eventName, eventParams);
   }
-}; 
+} 

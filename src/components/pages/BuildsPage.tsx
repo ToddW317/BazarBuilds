@@ -9,6 +9,7 @@ import BuildsFilterSidebar from '@/components/BuildsFilterSidebar'
 import BuildsNavigation from '@/components/BuildsNavigation'
 import GoogleAd from '@/components/GoogleAd'
 import BuildsDisabledBanner from '@/components/BuildsDisabledBanner'
+import { trackEvent } from '@/lib/analytics'
 
 export default function BuildsPage() {
   const [allBuilds, setAllBuilds] = useState<Build[]>([])
@@ -25,15 +26,21 @@ export default function BuildsPage() {
   // Load initial builds
   useEffect(() => {
     const loadBuilds = async () => {
-      setIsLoading(true)
-      const builds = await getBuilds(currentSort)
-      setAllBuilds(builds)
-      applyFilters(builds)
-      setIsLoading(false)
+      try {
+        setIsLoading(true)
+        const builds = await getBuilds()
+        setAllBuilds(builds)
+        applyFilters(builds)
+        trackEvent('view_builds_page')
+      } catch (error) {
+        console.error('Error loading builds:', error)
+      } finally {
+        setIsLoading(false)
+      }
     }
 
     loadBuilds()
-  }, [currentSort])
+  }, [])
 
   const applyFilters = (builds: Build[]) => {
     let filtered = [...builds]
@@ -41,16 +48,19 @@ export default function BuildsPage() {
     // Apply hero filter
     if (selectedHero) {
       filtered = filtered.filter(build => build.heroId === selectedHero)
+      trackEvent('filter_by_hero', { hero: selectedHero })
     }
 
     // Apply build type filter
     if (selectedBuildType) {
       filtered = filtered.filter(build => build.buildType === selectedBuildType)
+      trackEvent('filter_by_build_type', { type: selectedBuildType })
     }
 
     // Apply difficulty filter
     if (selectedDifficulty) {
       filtered = filtered.filter(build => build.difficulty === selectedDifficulty)
+      trackEvent('filter_by_difficulty', { difficulty: selectedDifficulty })
     }
 
     // Apply tag filter
@@ -60,17 +70,18 @@ export default function BuildsPage() {
           tag.toLowerCase().includes(searchTag.toLowerCase())
         )
       )
+      trackEvent('filter_by_tag', { tag: searchTag })
     }
 
     // Apply sorting
     filtered.sort((a, b) => {
       switch (currentSort) {
         case 'popular':
-          return (b.likes || 0) - (a.likes || 0)
+          return (b.likes?.length || 0) - (a.likes?.length || 0)
         case 'mostViewed':
           return (b.views || 0) - (a.views || 0)
         case 'topRated':
-          return ((b.rating?.average || 0) - (a.rating?.average || 0))
+          return (b.rating?.average || 0) - (a.rating?.average || 0)
         default: // 'newest'
           return b.createdAt.getTime() - a.createdAt.getTime()
       }
@@ -79,8 +90,10 @@ export default function BuildsPage() {
     setFilteredBuilds(filtered)
   }
 
-  const handleSortChange = (sortBy: BuildSortOption) => {
-    setCurrentSort(sortBy)
+  const handleSortChange = (sort: BuildSortOption) => {
+    setCurrentSort(sort)
+    trackEvent('sort_builds', { sort_by: sort })
+    applyFilters(allBuilds)
   }
 
   const handleTagSearch = (tag: string) => {
@@ -88,8 +101,8 @@ export default function BuildsPage() {
     applyFilters(allBuilds)
   }
 
-  const handleHeroFilter = (heroId: string | null) => {
-    setSelectedHero(heroId)
+  const handleHeroFilter = (hero: string | null) => {
+    setSelectedHero(hero)
     applyFilters(allBuilds)
   }
 
@@ -108,7 +121,9 @@ export default function BuildsPage() {
     setSelectedBuildType(null)
     setSelectedDifficulty(null)
     setSearchTag('')
-    setFilteredBuilds(allBuilds)
+    setCurrentSort('newest')
+    trackEvent('clear_filters')
+    applyFilters(allBuilds)
   }
 
   return (
@@ -169,13 +184,11 @@ export default function BuildsPage() {
               </button>
             </div>
           ) : (
-            <div>
-              <BuildsGrid builds={filteredBuilds.slice(0, 10)} />
+            <>
+              <BuildsGrid initialBuilds={filteredBuilds} />
+              {/* Ad after content */}
               <GoogleAd slot="YOUR_AD_SLOT_3" />
-              {filteredBuilds.length > 10 && (
-                <BuildsGrid builds={filteredBuilds.slice(10)} />
-              )}
-            </div>
+            </>
           )}
 
           {/* Bottom ad */}

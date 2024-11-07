@@ -4,24 +4,25 @@ import { Build } from '@/types/types'
 import { useState, useEffect } from 'react'
 import BuildCard from './BuildCard'
 import { db } from '@/lib/firebase'
-import { collection, query, orderBy, onSnapshot, doc } from 'firebase/firestore'
+import { doc, onSnapshot } from 'firebase/firestore'
 
 interface BuildsGridProps {
   initialBuilds: Build[]
-  sortBy?: string
 }
 
 export default function BuildsGrid({ initialBuilds }: BuildsGridProps) {
-  const [builds, setBuilds] = useState<Build[]>(initialBuilds)
-  const [isLoading, setIsLoading] = useState(false)
+  const [builds, setBuilds] = useState<Build[]>(initialBuilds || [])
 
   // Update builds when initialBuilds changes
   useEffect(() => {
-    setBuilds(initialBuilds)
+    console.log('BuildsGrid received builds:', initialBuilds)
+    setBuilds(initialBuilds || [])
   }, [initialBuilds])
 
   // Set up individual subscriptions for each build to track view counts
   useEffect(() => {
+    if (!builds || builds.length === 0) return
+
     const buildSubscriptions = builds.map(build => {
       const buildRef = doc(db, 'builds', build.id)
       return onSnapshot(buildRef, (doc) => {
@@ -41,14 +42,6 @@ export default function BuildsGrid({ initialBuilds }: BuildsGridProps) {
       buildSubscriptions.forEach(unsubscribe => unsubscribe())
     }
   }, [builds])
-
-  if (isLoading) {
-    return (
-      <div className="text-center py-12">
-        <p className="text-gray-300">Loading builds...</p>
-      </div>
-    )
-  }
 
   if (!builds || builds.length === 0) {
     return (

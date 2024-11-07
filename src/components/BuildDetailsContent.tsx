@@ -11,6 +11,7 @@ import BuildRating from './BuildRating'
 import ImageModal from './ImageModal'
 import { useAuth } from '@/contexts/AuthContext'
 import { toggleBuildLike } from '@/lib/buildService'
+import CopyBuildButton from './CopyBuildButton'
 
 interface BuildDetailsContentProps {
   build: Build
@@ -30,7 +31,7 @@ export default function BuildDetailsContent({ build, buildId }: BuildDetailsCont
     try {
       const liked = await toggleBuildLike(buildId, user.uid)
       setIsLiked(liked)
-      setLikeCount(prev => liked ? prev + 1 : prev - 1)
+      setLikeCount(prev => Math.max(0, liked ? prev + 1 : prev - 1))
     } catch (error) {
       console.error('Error toggling like:', error)
     }
@@ -69,13 +70,10 @@ export default function BuildDetailsContent({ build, buildId }: BuildDetailsCont
               </div>
             </div>
             <div className="md:text-right">
-              <BuildRating 
-                buildId={buildId}
-                initialRating={{
-                  average: build.rating?.average || 0,
-                  count: build.rating?.count || 0
-                }}
-              />
+              <div className="flex items-center space-x-4 mb-6">
+                <BuildRating buildId={buildId} initialRating={build.rating} />
+                <CopyBuildButton build={build} buildId={buildId} />
+              </div>
             </div>
           </div>
         </div>

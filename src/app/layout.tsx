@@ -4,6 +4,7 @@ import './globals.css'
 import Navbar from '@/components/Navbar'
 import { AuthProvider } from '@/contexts/AuthContext'
 import Footer from '@/components/Footer'
+import GoogleAd from '@/components/GoogleAd'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -22,24 +23,15 @@ export default function RootLayout({
       <head>
         <script
           async
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5095604091036937"
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=YOUR-CLIENT-ID"
           crossOrigin="anonymous"
-        />
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              (adsbygoogle = window.adsbygoogle || []).push({
-                google_ad_client: "ca-pub-5095604091036937",
-                enable_page_level_ads: true
-              });
-            `
-          }}
         />
       </head>
       <body className={`${inter.className} flex flex-col min-h-screen`}>
         <AuthProvider>
           <Navbar />
           <main className="flex-grow">
+            <GoogleAd />
             {children}
           </main>
           <Footer />

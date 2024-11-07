@@ -3,109 +3,139 @@ import {
   collection, 
   addDoc, 
   query, 
-  where, 
-  getDocs,
-  getDoc,
   orderBy, 
+  onSnapshot,
   serverTimestamp,
-  updateDoc,
   doc,
-  arrayUnion,
+  deleteDoc,
+  getDoc,
+  where,
+  updateDoc,
   arrayRemove,
-  increment,
-  onSnapshot
+  arrayUnion
 } from 'firebase/firestore';
 import { Comment } from '@/types/types';
 
 export async function addComment(
   buildId: string, 
-  userId: string, 
-  userName: string, 
-  content: string,
-  parentId?: string | null
+  userId: string,
+  userName: string,
+  content: string, 
+  parentId?: string
 ) {
   try {
-    const buildMentions = content.match(/#build-([a-zA-Z0-9]+)/g) || [];
-    const buildIds = buildMentions.map(mention => mention.replace('#build-', ''));
+    const buildRef = doc(db, 'builds', buildId);
+    const buildDoc = await getDoc(buildRef);
+    
+    if (!buildDoc.exists()) {
+      throw new Error('Build not found');
+    }
 
-    const commentData = {
-      buildId,
+    const commentsRef = collection(buildRef, 'comments');
+    await addDoc(commentsRef, {
       userId,
       userName,
       content,
-      parentId: parentId || null,
       createdAt: serverTimestamp(),
+      parentId: parentId || null,
       likes: 0,
       likedBy: [],
-      mentions: {
-        buildIds,
-        userIds: []
-      }
-    };
-
-    await addDoc(collection(db, 'comments'), commentData);
+      replies: []
+    });
   } catch (error) {
     console.error('Error adding comment:', error);
     throw error;
   }
 }
 
-export function subscribeToComments(
-  buildId: string,
-  onUpdate: (comments: Comment[]) => void
-) {
-  const commentsQuery = query(
-    collection(db, 'comments'),
-    where('buildId', '==', buildId),
-    orderBy('createdAt', 'desc')
-  );
+export function subscribeToComments(buildId: string, callback: (comments: Comment[]) => void) {
+  try {
+    const buildRef = doc(db, 'builds', buildId);
+    const commentsRef = collection(buildRef, 'comments');
+    const commentsQuery = query(
+      commentsRef,
+      orderBy('createdAt', 'desc')
+    );
 
-  const indexDescription = {
-    collectionGroup: 'comments',
-    queryScope: 'COLLECTION',
-    fields: [
-      { fieldPath: 'buildId', order: 'ASCENDING' },
-      { fieldPath: 'createdAt', order: 'DESCENDING' }
-    ]
-  };
+    return onSnapshot(commentsQuery, (snapshot) => {
+      const comments = snapshot.docs.map(doc => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          userId: data.userId || '',
+          userName: data.userName || 'Anonymous',
+          content: data.content || '',
+          createdAt: data.createdAt?.toDate() || new Date(),
+          parentId: data.parentId || null,
+          likes: data.likes || 0,
+          likedBy: Array.isArray(data.likedBy) ? data.likedBy : [],
+          replies: []
+        };
+      }) as Comment[];
 
-  return onSnapshot(commentsQuery, (snapshot) => {
-    const comments = snapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data(),
-      createdAt: doc.data().createdAt?.toDate() || new Date(),
-    })) as Comment[];
-    onUpdate(comments);
-  }, (error) => {
-    if (error.code === 'failed-precondition') {
-      console.error('Please create the following index:', indexDescription);
-      console.error('Visit:', error.message.split('here: ')[1]);
-    }
+      callback(comments);
+    });
+  } catch (error) {
     console.error('Error in comment subscription:', error);
-  });
+    throw error;
+  }
 }
 
-export async function toggleCommentLike(commentId: string, userId: string) {
-  const commentRef = doc(db, 'comments', commentId);
-  const commentSnap = await getDoc(commentRef);
-  
-  if (!commentSnap.exists()) {
-    throw new Error('Comment not found');
+export async function toggleCommentLike(buildId: string, commentId: string, userId: string): Promise<boolean> {
+  const buildRef = doc(db, 'builds', buildId);
+  const commentRef = doc(collection(buildRef, 'comments'), commentId);
+
+  try {
+    const commentDoc = await getDoc(commentRef);
+    if (!commentDoc.exists()) {
+      throw new Error('Comment not found');
+    }
+
+    const commentData = commentDoc.data();
+    const likedBy = commentData.likedBy || [];
+    const isLiked = likedBy.includes(userId);
+
+    await updateDoc(commentRef, {
+      likes: Math.max(0, (commentData.likes || 0) + (isLiked ? -1 : 1)),
+      likedBy: isLiked 
+        ? arrayRemove(userId)
+        : arrayUnion(userId)
+    });
+
+    return !isLiked;
+  } catch (error) {
+    console.error('Error toggling comment like:', error);
+    throw error;
   }
+}
 
-  const commentData = commentSnap.data();
+export async function deleteComment(buildId: string, commentId: string, userId: string) {
+  try {
+    const buildRef = doc(db, 'builds', buildId);
+    const commentsRef = collection(buildRef, 'comments');
+    
+    const commentDoc = await getDoc(doc(commentsRef, commentId));
+    if (!commentDoc.exists()) {
+      throw new Error('Comment not found');
+    }
 
-  if (commentData.likedBy.includes(userId)) {
-    await updateDoc(commentRef, {
-      likes: increment(-1),
-      likedBy: arrayRemove(userId)
+    if (commentDoc.data().userId !== userId) {
+      throw new Error('Unauthorized to delete this comment');
+    }
+
+    const batch = db.batch();
+    
+    batch.delete(doc(commentsRef, commentId));
+
+    const repliesQuery = query(commentsRef, where('parentId', '==', commentId));
+    const repliesSnapshot = await getDocs(repliesQuery);
+    repliesSnapshot.forEach(replyDoc => {
+      batch.delete(replyDoc.ref);
     });
-    return false;
-  } else {
-    await updateDoc(commentRef, {
-      likes: increment(1),
-      likedBy: arrayUnion(userId)
-    });
-    return true;
+
+    await batch.commit();
+  } catch (error) {
+    console.error('Error deleting comment:', error);
+    throw error;
   }
 } 

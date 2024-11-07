@@ -58,6 +58,7 @@ export default function CommentSection({ buildId }: CommentSectionProps) {
 
       <div className="mt-8">
         <CommentList 
+          buildId={buildId}
           comments={comments}
           onReply={handleAddComment}
         />

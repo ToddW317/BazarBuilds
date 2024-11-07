@@ -15,7 +15,8 @@ import {
   arrayUnion,
   arrayRemove,
   increment,
-  setDoc
+  setDoc,
+  limit
 } from 'firebase/firestore';
 import { 
   ref, 
@@ -87,58 +88,42 @@ export async function createBuild(
   }
 }
 
-export async function getBuilds(sortBy: BuildSortOption = 'newest'): Promise<Build[]> {
+export async function getBuilds(limitCount: number = 50): Promise<Build[]> {
   try {
-    let buildsQuery;
-
-    switch (sortBy) {
-      case 'popular':
-        buildsQuery = query(
-          collection(db, 'builds'),
-          orderBy('likes', 'desc')
-        );
-        break;
-      case 'mostViewed':
-        buildsQuery = query(
-          collection(db, 'builds'),
-          orderBy('views', 'desc')
-        );
-        break;
-      case 'topRated':
-        buildsQuery = query(
-          collection(db, 'builds'),
-          orderBy('rating.average', 'desc')
-        );
-        break;
-      default: // 'newest'
-        buildsQuery = query(
-          collection(db, 'builds'),
-          orderBy('createdAt', 'desc')
-        );
-    }
-
-    const snapshot = await getDocs(buildsQuery);
+    console.log('Fetching builds...')
     
-    if (snapshot.empty) {
-      console.log('No builds found in database');
-      return [];
+    const buildsRef = collection(db, 'builds')
+    const q = query(
+      buildsRef,
+      orderBy('createdAt', 'desc'),
+      limit(limitCount)
+    )
+
+    const querySnapshot = await getDocs(q)
+    console.log(`Found ${querySnapshot.size} builds`)
+
+    if (querySnapshot.empty) {
+      console.log('No builds found in Firestore')
+      return []
     }
 
-    const builds = snapshot.docs.map(doc => {
-      const data = doc.data();
+    const builds = querySnapshot.docs.map(doc => {
+      const data = doc.data()
+      // Convert Firestore Timestamp to Date
       return {
-        id: doc.id,
         ...data,
-        createdAt: data.createdAt ? (data.createdAt as Timestamp).toDate() : new Date(),
-        updatedAt: data.updatedAt ? (data.updatedAt as Timestamp).toDate() : new Date(),
-        views: data.views || 0
-      } as Build;
-    });
+        id: doc.id,
+        createdAt: data.createdAt?.toDate() || new Date(),
+        updatedAt: data.updatedAt?.toDate() || new Date()
+      } as Build
+    })
 
-    return builds;
+    console.log('Successfully processed builds:', builds.length)
+    return builds
+
   } catch (error) {
-    console.error('Error fetching builds:', error);
-    return [];
+    console.error('Error fetching builds:', error)
+    throw error
   }
 }
 
@@ -224,49 +209,29 @@ export async function getPopularTags(limit: number = 10): Promise<{ tag: string;
 }
 
 export async function toggleBuildLike(buildId: string, userId: string): Promise<boolean> {
-  const buildRef = doc(db, 'builds', buildId)
-  const buildSnap = await getDoc(buildRef)
-  
-  if (!buildSnap.exists()) {
-    throw new Error('Build not found')
-  }
+  const buildRef = doc(db, 'builds', buildId);
 
-  const buildData = buildSnap.data()
-  const likedBy = buildData.likedBy || []
-
-  if (likedBy.includes(userId)) {
-    // Unlike
-    await updateDoc(buildRef, {
-      likes: increment(-1),
-      likedBy: arrayRemove(userId)
-    })
-    return false
-  } else {
-    // Like
-    await updateDoc(buildRef, {
-      likes: increment(1),
-      likedBy: arrayUnion(userId)
-    })
-
-    // Create notification for the build owner
-    if (buildData.userId !== userId) { // Don't notify if user likes their own build
-      const userSnap = await getDoc(doc(db, 'users', userId))
-      const actorName = userSnap.exists() ? 
-        userSnap.data().displayName || 'Anonymous User' : 
-        'Anonymous User'
-
-      await createNotification(
-        buildData.userId, // recipient
-        'build_like',
-        {
-          buildId,
-          actorName,
-          buildTitle: buildData.title
-        }
-      )
+  try {
+    const buildDoc = await getDoc(buildRef);
+    if (!buildDoc.exists()) {
+      throw new Error('Build not found');
     }
 
-    return true
+    const buildData = buildDoc.data();
+    const likedBy = buildData.likedBy || [];
+    const isLiked = likedBy.includes(userId);
+
+    await updateDoc(buildRef, {
+      likes: Math.max(0, (buildData.likes || 0) + (isLiked ? -1 : 1)),
+      likedBy: isLiked 
+        ? arrayRemove(userId)
+        : arrayUnion(userId)
+    });
+
+    return !isLiked;
+  } catch (error) {
+    console.error('Error toggling build like:', error);
+    throw error;
   }
 }
 
@@ -381,5 +346,26 @@ export async function getUserTopBuilds(userId: string): Promise<{
   } catch (error) {
     console.error('Error fetching top builds:', error);
     return { byViews: [], byLikes: [] };
+  }
+}
+
+export async function getRelatedBuilds(cardId: string): Promise<Build[]> {
+  try {
+    const buildsRef = collection(db, 'builds');
+    const q = query(
+      buildsRef,
+      where('cards', 'array-contains', cardId),
+      orderBy('likes', 'desc'),
+      limit(5)
+    );
+    
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    })) as Build[];
+  } catch (error) {
+    console.error('Error fetching related builds:', error);
+    return [];
   }
 }

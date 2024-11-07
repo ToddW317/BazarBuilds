@@ -35,7 +35,7 @@ interface CardDisplayProps {
 }
 
 // Add helper function to format image paths according to the pattern
-const formatImagePath = (itemName: string, size: string = 'M', character: string = 'ADV') => {
+export const formatImagePath = (itemName: string, size: string = 'M', character: string = 'ADV') => {
   // Clean up the item name
   const cleanName = itemName
     .replace(/\s+/g, '')  // Remove spaces

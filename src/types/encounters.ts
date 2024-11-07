@@ -1,33 +1,25 @@
-export interface Tooltip {
-  Content: {
-    Key: string;
-    Text: string;
-  };
+interface Tooltip {
+  Content: TooltipContent;
   TooltipType: string;
+}
+
+export interface ItemAttributes {
+  CooldownMax?: number;
+  BuyPrice?: number;
+  SellPrice?: number;
+  Multicast?: number;
+  DamageAmount?: number;
+  PoisonApplyAmount?: number;
+  Custom_0?: number;
+  [key: string]: number | undefined;
 }
 
 export interface ItemTier {
   AbilityIds: string[];
-  Attributes: {
-    CooldownMax?: number;
-    BuyPrice: number;
-    SellPrice: number;
-    Multicast?: number;
-    DamageAmount?: number;
-    Custom_0?: number;
-    HealAmount?: number;
-    ShieldApplyAmount?: number;
-    SlowAmount?: number;
-    SlowTargets?: number;
-    FreezeAmount?: number;
-    FreezeTargets?: number;
-    BurnApplyAmount?: number;
-    PoisonAmount?: number;
-    [key: string]: number | undefined;
-  };
-  AuraIds: string[];
+  Attributes: ItemAttributes;
+  AuraIds: never[] | string[];
   TooltipIds: number[];
-  tooltips: string[] | Tooltip[];
+  tooltips: (string | Tooltip | null)[];
 }
 
 export interface SkillTier {
@@ -51,14 +43,15 @@ export interface Skill {
 }
 
 export interface Item {
-  Heroes: string[];
-  Tags: string[];
+  InternalName: string;
   StartingTier: string;
   Size: string;
-  Tiers: {
-    [key: string]: ItemTier;
-  };
-  InternalName: string;
+  ArtKey: string;
+  Tags: string[];
+  Heroes: string[];
+  Tiers: Record<string, TierData>;
+  images: string[];
+  changelog?: ChangeLogEntry[];
 }
 
 export interface EncounterItem {
@@ -81,9 +74,24 @@ export interface Encounter {
   Items: EncounterItem[];
   Skills: EncounterSkill[];
 }
-
 export interface EncounterData {
   items: Record<string, Item>;
   monsters: Record<string, Encounter>;
   skills: Record<string, Skill>;
-} 
+}
+
+interface TierData {
+  Attributes: Record<string, any>;
+  tooltips?: Tooltip[];
+}
+
+interface TooltipContent {
+  Text?: string;
+}
+
+export type CachedItems = Record<string, Item>
+
+interface ChangeLogEntry {
+  date: string;
+  changes: string;
+}
