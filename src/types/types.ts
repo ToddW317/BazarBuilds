@@ -30,6 +30,7 @@ export interface Build {
     total: number
   }
   views: number
+  lastViewed?: number
 }
 
 export interface BuildFormData {

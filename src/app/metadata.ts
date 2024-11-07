@@ -18,4 +18,9 @@ export const myBuildsMetadata: Metadata = {
 export const likedBuildsMetadata: Metadata = {
   title: 'Liked Builds | BazaarBuilds',
   description: 'View your favorite builds from the community.'
+}
+
+export const profileMetadata: Metadata = {
+  title: 'Profile | BazaarBuilds',
+  description: 'View and edit your BazaarBuilds profile.'
 } 
