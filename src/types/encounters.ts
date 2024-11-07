@@ -27,7 +27,27 @@ export interface ItemTier {
   };
   AuraIds: string[];
   TooltipIds: number[];
-  tooltips: Tooltip[];
+  tooltips: string[] | Tooltip[];
+}
+
+export interface SkillTier {
+  AbilityIds: string[];
+  Attributes: {
+    [key: string]: number;
+  };
+  AuraIds: string[];
+  TooltipIds: number[];
+  Tooltips: string[];
+}
+
+export interface Skill {
+  Heroes: string[];
+  StartingTier: string;
+  Tiers: {
+    [key: string]: SkillTier;
+  };
+  InternalID: string;
+  Name: string;
 }
 
 export interface Item {
@@ -65,8 +85,5 @@ export interface Encounter {
 export interface EncounterData {
   items: Record<string, Item>;
   monsters: Record<string, Encounter>;
-  skills: Record<string, {
-    tooltips: Tooltip[];
-    [key: string]: any;
-  }>;
+  skills: Record<string, Skill>;
 } 

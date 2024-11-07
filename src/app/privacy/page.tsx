@@ -1,3 +1,10 @@
+import { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Privacy Policy | BazaarBuilds',
+  description: 'BazaarBuilds privacy policy and data handling practices.'
+}
+
 export default function PrivacyPolicyPage() {
   return (
     <div className="min-h-screen bg-gray-900 py-8">

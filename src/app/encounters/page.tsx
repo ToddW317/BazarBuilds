@@ -1,10 +1,44 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import { Encounter, EncounterData, Item } from '@/types/encounters'
+import { Encounter, EncounterData, Item, ExtendedItem, Tooltip, Skill } from '@/types/encounters'
 import encounterData from '@/data/out.json'
 import WIPBadge from '@/components/WIPBadge'
 import CreditBanner from '@/components/CreditBanner'
+import { attributeIcons, tagIcons, decipherCustomAttribute } from '@/utils/cardIcons'
+
+const heroColors = {
+  'Jules': {
+    bg: 'bg-orange-900/20',
+    text: 'text-orange-300',
+    ring: 'ring-orange-500/50'
+  },
+  'Dooley': {
+    bg: 'bg-cyan-900/20',
+    text: 'text-cyan-300',
+    ring: 'ring-cyan-500/50'
+  },
+  'Stelle': {
+    bg: 'bg-yellow-900/20',
+    text: 'text-yellow-300',
+    ring: 'ring-yellow-500/50'
+  },
+  'Pygmalien': {
+    bg: 'bg-emerald-900/20',
+    text: 'text-emerald-300',
+    ring: 'ring-emerald-500/50'
+  },
+  'Vanessa': {
+    bg: 'bg-blue-900/20',
+    text: 'text-blue-300',
+    ring: 'ring-blue-500/50'
+  },
+  'Common': {
+    bg: 'bg-purple-900/20',
+    text: 'text-purple-300',
+    ring: 'ring-purple-500/50'
+  }
+} as const;
 
 function getTierColor(tier: string) {
   switch (tier) {
@@ -40,118 +74,137 @@ function isBossEncounter(encounter: Encounter): boolean {
          encounter.Level >= 10
 }
 
-function EncounterCard({ encounter, items }: { encounter: Encounter, items: Record<string, Item> }) {
+function EncounterCard({ encounter, items }: { encounter: Encounter, items: Record<string, ExtendedItem> }) {
   const [isExpanded, setIsExpanded] = useState(false)
   const isBoss = isBossEncounter(encounter)
 
-  // Add helper function to get encounter image URL
+  // Updated to handle both data sources
   const getEncounterImageUrl = (encounterName: string) => {
-    // Convert encounter name to kebab case for file naming
+    // Default to encounters directory
     const formattedName = encounterName
       .toLowerCase()
-      .replace(/[^a-z0-9\s]/g, '') // Remove special characters
-      .replace(/\s+/g, '-') // Replace spaces with hyphens
+      .replace(/[^a-z0-9\s]/g, '')
+      .replace(/\s+/g, '-');
     
-    return `/encounters/${formattedName}.webp`
+    return `/encounters/${formattedName}.webp`;
   }
 
-  // Helper function to format time values
-  const formatTime = (ms: number) => {
-    return (ms / 100).toFixed(1)
+  // Updated getSkillImageUrl function
+  const getSkillImageUrl = (skillName: string, skillId: string) => {
+    // First try to get the skill from encounterData using the ID
+    const skillData = encounterData.skills[skillId];
+    
+    // If we have the skill data and it has an ArtKey, use that directly
+    if (skillData?.ArtKey) {
+      // Some ArtKeys already include the Icon_Skill_ prefix, some don't
+      if (skillData.ArtKey.startsWith('Icon_Skill_')) {
+        return `/skills/${skillData.ArtKey}.png`;
+      }
+      return `/skills/Icon_Skill_${skillData.ArtKey}.png`;
+    }
+    
+    // Fallback: format the skill name
+    const formattedName = skillName
+      .replace(/\s+/g, '') // Remove spaces
+      .replace(/[^a-zA-Z0-9]/g, ''); // Remove special characters
+    
+    return `/skills/Icon_Skill_${formattedName}.png`;
   }
 
-  // Updated helper function to get item description from tooltips
+  // Helper function to get item description from tooltips
   const getItemDescription = (itemId: string, tier: string) => {
     try {
-      const item = encounterData.items[itemId]
+      const item = items[itemId] as ExtendedItem;
       if (!item) {
-        console.log('Item not found:', itemId)
-        return 'No description available'
+        return 'No description available';
       }
 
-      const tierData = item.Tiers[tier]
+      const tierData = item.Tiers[tier];
       if (!tierData) {
-        console.log('Tier not found:', tier, 'for item:', itemId)
-        return 'No description available'
+        return 'No description available';
       }
 
-      // Check if tooltips exist and are properly formatted
       if (!Array.isArray(tierData.tooltips) || !tierData.tooltips.length) {
-        console.log('No tooltips found for tier:', tier, 'item:', itemId)
-        return 'No description available'
+        return 'No description available';
       }
 
-      // Join all tooltip texts
       return tierData.tooltips
-        .map(tooltip => {
+        .map((tooltip: string | Tooltip) => {
           if (typeof tooltip === 'string') {
-            return tooltip
+            return tooltip;
           }
-          return tooltip?.Content?.Text || ''
+          return tooltip?.Content?.Text || '';
         })
-        .filter(text => text)
-        .join(' ')
+        .filter((text: string) => text)
+        .join(' ');
     } catch (error) {
-      console.error('Error getting item description:', error, { itemId, tier })
-      return 'No description available'
+      console.error('Error getting item description:', error);
+      return 'No description available';
     }
   }
 
-  // Updated helper function to get skill description from encounterData
+  // Updated skill description helper
   const getSkillDescription = (skillName: string, skillId: string, tier: string) => {
     try {
-      // Get the skill data using the skillId
-      const skillData = encounterData.skills[skillId]
-      if (!skillData) {
-        console.log('Skill not found:', skillId)
-        return 'No description available'
+      const skillData = encounterData.skills[skillId] as Skill;
+      if (!skillData?.Tiers?.[tier]) {
+        return 'No description available';
       }
 
-      // Get the tier data for the skill
-      const tierData = skillData.Tiers?.[tier]
-      if (!tierData) {
-        console.log('No tier data found for tier:', tier, 'in skill:', skillId)
-        return 'No description available'
+      const tierData = skillData.Tiers[tier];
+      
+      if (tierData.Tooltips && Array.isArray(tierData.Tooltips)) {
+        return tierData.Tooltips.map((tooltip: string) => {
+          return tooltip.replace(/(\d+)(\s*)(milliseconds|ms|seconds|s)/gi, 
+            (match, num) => `${(parseInt(num) / 100).toFixed(1)}s`
+          );
+        }).join(' ');
       }
 
-      // Check for both formats of tooltips
-      if (tierData.Tooltips && typeof tierData.Tooltips === 'string') {
-        // Handle string format
-        return tierData.Tooltips
-      } else if (tierData.tooltips?.length) {
-        // Handle array format
-        return tierData.tooltips
-          .map(tooltip => {
-            if (typeof tooltip === 'string') {
-              return tooltip
-            }
-            return tooltip?.Content?.Text || ''
-          })
-          .filter(Boolean)
-          .join(' ')
-      }
-
-      console.log('No tooltips found for tier:', tier, 'in skill:', skillId)
-      return 'No description available'
+      return 'No description available';
     } catch (error) {
-      console.error('Error getting skill description:', error, { skillName, skillId, tier })
-      return 'No description available'
+      console.error('Error getting skill description:', error);
+      return 'No description available';
     }
   }
 
-  // Updated helper function to get skill image URL
-  const getSkillImageUrl = (skillName: string) => {
-    // Convert skill name to proper format:
-    // 1. Remove spaces and special characters
-    // 2. Add "Icon_Skill_" prefix
-    // 3. Capitalize first letter of each word
-    const formattedName = skillName
-      .split(/[\s-]+/)
-      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-      .join('')
+  // Add helper function to format image paths according to the pattern
+  const formatImagePath = (itemName: string, size: string = 'M', character: string = 'ADV') => {
+    // Clean up the item name
+    const cleanName = itemName
+      .replace(/\s+/g, '')  // Remove spaces
+      .replace(/[^a-zA-Z0-9]/g, ''); // Remove special characters
 
-    return `/skills/Icon_Skill_${formattedName}.png`
-  }
+    // Format size (S, M, L)
+    const sizeMap: { [key: string]: string } = {
+      'Small': 'S',
+      'Medium': 'M',
+      'Large': 'L'
+    };
+
+    // Format character codes
+    const charMap: { [key: string]: string } = {
+      'Jules': 'JUL',
+      'Dooley': 'DOO',
+      'Stelle': 'STE',
+      'Pygmalien': 'PYG',
+      'Vanessa': 'VAN',
+      'Common': 'ADV'
+    };
+
+    return `CF_${sizeMap[size] || 'M'}_${charMap[character] || 'ADV'}_${cleanName}_D.jpeg`;
+  };
+
+  // Update getItemImageUrl function
+  const getItemImageUrl = (itemId: string) => {
+    const item = encounterData.items[itemId];
+    if (item) {
+      // Try to get the first hero, fallback to 'Common'
+      const hero = item.Heroes?.[0] || 'Common';
+      return `/items/${formatImagePath(item.InternalName, item.Size, hero)}`;
+    }
+    return '/items/default-item.png';
+  };
 
   return (
     <div className={`
@@ -168,8 +221,7 @@ function EncounterCard({ encounter, items }: { encounter: Encounter, items: Reco
           alt={encounter.name}
           className="w-full h-full object-cover"
           onError={(e) => {
-            // Fallback if image fails to load
-            e.currentTarget.src = '/encounters/default-encounter.webp'
+            e.currentTarget.src = '/encounters/default-encounter.webp';
           }}
         />
         {/* Add overlay gradient for better text readability */}
@@ -234,14 +286,26 @@ function EncounterCard({ encounter, items }: { encounter: Encounter, items: Reco
                 {encounter.Skills.map((skill, index) => (
                   <div key={index} className="bg-purple-900/20 rounded-lg p-3 border border-purple-900/30">
                     <div className="flex items-start gap-3">
-                      {/* Skill Image */}
+                      {/* Updated Skill Image */}
                       <div className="flex-shrink-0 w-12 h-12 rounded-lg overflow-hidden bg-gray-800">
                         <img
-                          src={getSkillImageUrl(skill.Name)}
+                          src={getSkillImageUrl(skill.Name, skill.SkillID)}
                           alt={skill.Name}
                           className="w-full h-full object-cover"
                           onError={(e) => {
-                            e.currentTarget.src = '/skills/default-skill.png'
+                            const currentSrc = e.currentTarget.src;
+                            if (currentSrc.includes('Icon_Skill_')) {
+                              // If the normal path fails, try MON_ prefix
+                              if (!currentSrc.includes('MON_')) {
+                                const fileName = currentSrc.split('/').pop()?.replace('Icon_Skill_', 'Icon_Skill_MON_');
+                                if (fileName) {
+                                  e.currentTarget.src = `/skills/${fileName}`;
+                                  return;
+                                }
+                              }
+                              // If all attempts fail, use default
+                              e.currentTarget.src = '/skills/default-skill.png';
+                            }
                           }}
                         />
                       </div>
@@ -266,39 +330,179 @@ function EncounterCard({ encounter, items }: { encounter: Encounter, items: Reco
           {/* Items Section */}
           <div>
             <h4 className="text-lg font-semibold text-yellow-400 mb-3">Items</h4>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {encounter.Items.map((item, index) => {
-                const itemDetails = items[item.ItemID]
+                const itemDetails = items[item.ItemID];
+                const currentTierData = itemDetails?.Tiers[item.Tier];
+                
                 return (
-                  <div key={index} className="bg-gray-700/50 rounded-lg p-3">
-                    <div className="flex justify-between items-start mb-2">
-                      <span className="font-medium text-white">{item.Name}</span>
-                      <span className={`${getTierColor(item.Tier)} text-sm`}>{item.Tier}</span>
-                    </div>
-                    {itemDetails && (
-                      <div className="space-y-2">
-                        <div className="flex flex-wrap gap-2">
-                          {itemDetails.Tags.map((tag, i) => (
-                            <span 
-                              key={i}
-                              className="text-xs px-2 py-1 rounded-full bg-gray-600/50 text-gray-300"
-                            >
-                              {tag}
-                            </span>
-                          ))}
+                  <div 
+                    key={index} 
+                    className="relative group hover:z-[9999]"
+                    style={{ isolation: 'isolate' }}
+                  >
+                    <div 
+                      onClick={() => window.open(`/cards/${item.ItemID}`, '_blank')}
+                      className="bg-gray-800 rounded-lg overflow-hidden border border-gray-700 cursor-pointer 
+                        hover:border-blue-500/50 transition-all duration-200"
+                    >
+                      {/* Card Header with Image */}
+                      <div className="relative">
+                        <div className="relative h-32 overflow-hidden">
+                          <img
+                            src={getItemImageUrl(item.ItemID)}
+                            alt={item.Name}
+                            className="absolute inset-0 w-full h-full object-contain bg-gray-900"
+                            onError={(e) => {
+                              const currentSrc = e.currentTarget.src;
+                              if (!currentSrc.includes('default-item')) {
+                                if (itemDetails?.ArtKey) {
+                                  e.currentTarget.src = `/items/${itemDetails.ArtKey}.png`;
+                                  return;
+                                }
+                              }
+                              e.currentTarget.src = '/items/default-item.png';
+                            }}
+                          />
+                          {/* Dark overlay for better text readability */}
+                          <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/50 to-transparent" />
                         </div>
-                        <p className="text-sm text-gray-400">
-                          {getItemDescription(item.ItemID, item.Tier)}
-                        </p>
+
+                        {/* Item Info Overlay */}
+                        <div className="absolute bottom-0 left-0 right-0 p-2">
+                          <div className="flex justify-between items-end gap-2">
+                            <div className="flex-1">
+                              <h3 className="text-base font-bold text-white leading-tight line-clamp-2">
+                                {item.Name}
+                              </h3>
+                            </div>
+                            <div className="flex-shrink-0">
+                              <span className={`
+                                inline-flex px-2 py-0.5 rounded-full text-xs font-medium
+                                ${getTierColor(item.Tier)} ring-1 ring-current
+                              `}>
+                                {item.Tier}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Card Content */}
+                      <div className="p-3 space-y-3">
+                        {/* Tags */}
+                        {itemDetails && (
+                          <div className="flex flex-wrap gap-1">
+                            {itemDetails.Tags.map((tag, i) => (
+                              <span 
+                                key={i} 
+                                className="inline-flex items-center text-xs px-1.5 py-0.5 rounded bg-gray-700/50 text-gray-300"
+                                title={tag}
+                              >
+                                {tagIcons[tag]} {tag}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+
+                        {/* Attributes */}
+                        {currentTierData && (
+                          <div className="grid grid-cols-2 gap-1.5 text-sm">
+                            {Object.entries(currentTierData.Attributes)
+                              .filter(([key]) => key !== 'CooldownMax')
+                              .map(([key, value]) => {
+                                const iconInfo = attributeIcons[key]
+                                if (!iconInfo) return null
+
+                                return (
+                                  <div 
+                                    key={key}
+                                    className="flex items-center gap-1.5 bg-gray-700/30 rounded p-1.5"
+                                    title={iconInfo.label}
+                                  >
+                                    <span className="text-base">{iconInfo.icon}</span>
+                                    <span className="text-white">
+                                      {key === 'Custom_0' 
+                                        ? decipherCustomAttribute(key, value as number, itemDetails?.Tags || [])
+                                        : value
+                                      }
+                                    </span>
+                                  </div>
+                                )
+                              })}
+                          </div>
+                        )}
+
+                        {/* Effects/Tooltips */}
+                        {currentTierData?.tooltips && (
+                          <div className="space-y-1">
+                            {currentTierData.tooltips.map((tooltip, index) => {
+                              const tooltipContent = typeof tooltip === 'string' 
+                                ? tooltip 
+                                : tooltip?.Content?.Text || '';
+                              const tooltipType = typeof tooltip === 'string' 
+                                ? '' 
+                                : tooltip?.TooltipType || '';
+
+                              return (
+                                <div 
+                                  key={index}
+                                  className="text-xs text-gray-300 bg-gray-700/30 rounded p-1.5"
+                                >
+                                  {tooltipType && (
+                                    <span className="mr-1">
+                                      {tooltipType === 'Active' ? '🎯' : 
+                                       tooltipType === 'Passive' ? '✨' : ''}
+                                    </span>
+                                  )}
+                                  {tooltipContent}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
+
+                        {/* Heroes */}
+                        {itemDetails?.Heroes.length > 0 && itemDetails.Heroes[0] !== 'Common' && (
+                          <div className="flex flex-wrap gap-1">
+                            {itemDetails.Heroes.map((hero, index) => {
+                              const colors = heroColors[hero as keyof typeof heroColors] || heroColors.Common;
+                              return (
+                                <span 
+                                  key={index}
+                                  className={`
+                                    text-xs px-1.5 py-0.5 rounded ring-1
+                                    ${colors.bg} ${colors.text} ${colors.ring}
+                                    transition-colors duration-200 hover:bg-opacity-30
+                                  `}
+                                >
+                                  👑 {hero}
+                                </span>
+                              );
+                            })}
+                          </div>
+                        )}
+
+                        {/* Enchant */}
                         {item.Enchant && (
-                          <div className="text-sm text-emerald-400">
-                            Enchant: {item.Enchant}
+                          <div className="mt-2">
+                            <span className="text-sm text-emerald-400 bg-emerald-900/20 px-2 py-1 rounded ring-1 ring-emerald-500/30">
+                              ✨ {item.Enchant}
+                            </span>
                           </div>
                         )}
                       </div>
-                    )}
+                    </div>
+
+                    {/* Add hover card */}
+                    <ItemCardHover 
+                      item={item}
+                      itemDetails={itemDetails}
+                      currentTierData={currentTierData}
+                      getItemImageUrl={getItemImageUrl}
+                    />
                   </div>
-                )
+                );
               })}
             </div>
           </div>
@@ -379,6 +583,161 @@ const allItemTags = (() => {
   return Array.from(tags).sort()
 })()
 
+// Move ItemCardHover component definition before getItemImageUrl
+function ItemCardHover({ 
+  item, 
+  itemDetails, 
+  currentTierData,
+  getItemImageUrl 
+}: { 
+  item: any, 
+  itemDetails: any, 
+  currentTierData: any,
+  getItemImageUrl: (itemId: string) => string
+}) {
+  return (
+    <div className="fixed z-[9999] left-auto ml-2 top-auto w-96 opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none">
+      <div className="bg-gray-800 rounded-lg shadow-2xl border border-gray-700 overflow-hidden backdrop-blur-sm">
+        {/* Large Image Display */}
+        <div className="relative aspect-video w-full">
+          <img
+            src={getItemImageUrl(item.ItemID)}
+            alt={item.Name}
+            className="w-full h-full object-contain bg-gray-900"
+            onError={(e) => {
+              const currentSrc = e.currentTarget.src;
+              if (!currentSrc.includes('default-item')) {
+                if (itemDetails?.ArtKey) {
+                  e.currentTarget.src = `/items/${itemDetails.ArtKey}.png`;
+                  return;
+                }
+              }
+              e.currentTarget.src = '/items/default-item.png';
+            }}
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/50 to-transparent" />
+        </div>
+
+        {/* Item Details */}
+        <div className="p-4 space-y-4">
+          {/* Header */}
+          <div className="flex justify-between items-start">
+            <h3 className="text-xl font-bold text-white">{item.Name}</h3>
+            <span className={`${getTierColor(item.Tier)} text-sm font-medium px-2 py-1 rounded-full ring-1 ring-current`}>
+              {item.Tier}
+            </span>
+          </div>
+
+          {/* Tags */}
+          {itemDetails && (
+            <div className="flex flex-wrap gap-2">
+              {itemDetails.Tags.map((tag: string, i: number) => (
+                <span 
+                  key={i} 
+                  className="flex items-center gap-1 px-2 py-1 rounded-lg bg-gray-700/50 text-gray-300 text-sm"
+                >
+                  <span className="text-lg">{tagIcons[tag]}</span>
+                  {tag}
+                </span>
+              ))}
+            </div>
+          )}
+
+          {/* Attributes */}
+          {currentTierData && (
+            <div className="grid grid-cols-2 gap-2">
+              {Object.entries(currentTierData.Attributes)
+                .filter(([key]) => key !== 'CooldownMax')
+                .map(([key, value]) => {
+                  const iconInfo = attributeIcons[key]
+                  if (!iconInfo) return null
+
+                  return (
+                    <div 
+                      key={key}
+                      className="flex items-center gap-2 bg-gray-700/30 rounded-lg p-2"
+                    >
+                      <span className="text-xl" title={iconInfo.label}>{iconInfo.icon}</span>
+                      <div className="flex flex-col">
+                        <span className="text-xs text-gray-400">{iconInfo.label}</span>
+                        <span className="text-white">
+                          {key === 'Custom_0' 
+                            ? decipherCustomAttribute(key, value as number, itemDetails?.Tags || [])
+                            : value
+                          }
+                        </span>
+                      </div>
+                    </div>
+                  )
+                })}
+            </div>
+          )}
+
+          {/* Effects/Tooltips */}
+          {currentTierData?.tooltips && (
+            <div className="space-y-2">
+              {currentTierData.tooltips.map((tooltip: any, index: number) => {
+                const tooltipContent = typeof tooltip === 'string' 
+                  ? tooltip 
+                  : tooltip?.Content?.Text || '';
+                const tooltipType = typeof tooltip === 'string' 
+                  ? '' 
+                  : tooltip?.TooltipType || '';
+
+                return (
+                  <div 
+                    key={index}
+                    className="flex items-start gap-2 bg-gray-700/30 rounded-lg p-3"
+                  >
+                    <span className="text-lg mt-0.5">
+                      {tooltipType === 'Active' ? '🎯' : 
+                       tooltipType === 'Passive' ? '✨' : '📜'}
+                    </span>
+                    <div className="flex-1">
+                      <div className="text-sm text-gray-300">{tooltipContent}</div>
+                      {tooltipType && (
+                        <div className="text-xs text-gray-500 mt-1">{tooltipType}</div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Heroes */}
+          {itemDetails?.Heroes.length > 0 && itemDetails.Heroes[0] !== 'Common' && (
+            <div className="flex flex-wrap gap-2">
+              {itemDetails.Heroes.map((hero: string, index: number) => {
+                const colors = heroColors[hero as keyof typeof heroColors] || heroColors.Common;
+                return (
+                  <span 
+                    key={index}
+                    className={`
+                      px-2 py-1 rounded-lg text-sm
+                      ${colors.bg} ${colors.text} ${colors.ring}
+                    `}
+                  >
+                    👑 {hero}
+                  </span>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Enchant */}
+          {item.Enchant && (
+            <div className="flex items-center gap-2">
+              <span className="text-lg">✨</span>
+              <span className="text-emerald-400">{item.Enchant}</span>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function EncountersPage() {
   const [selectedLevel, setSelectedLevel] = useState<number>(0)
   const [searchQuery, setSearchQuery] = useState('')
@@ -388,18 +747,18 @@ export default function EncountersPage() {
 
   const filteredEncounters = useMemo(() => {
     return parsedEncounters.filter(encounter => {
-      const matchesLevel = selectedLevel === 0 || encounter.Level === selectedLevel
-      const matchesSearch = encounter.name.toLowerCase().includes(searchQuery.toLowerCase())
-      const matchesTier = !selectedTier || encounter.Items.some(item => item.Tier === selectedTier)
+      const matchesLevel = selectedLevel === 0 || encounter.Level === selectedLevel;
+      const matchesSearch = encounter.name.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesTier = !selectedTier || encounter.Items.some(item => item.Tier === selectedTier);
       const matchesTag = !selectedTag || encounter.Items.some(item => {
-        const itemDetails = encounterData.items[item.ItemID]
-        return itemDetails?.Tags.includes(selectedTag)
-      })
-      const matchesBossFilter = !showBossesOnly || isBossEncounter(encounter)
+        const itemDetails = encounterData.items[item.ItemID] as ExtendedItem;
+        return itemDetails?.Tags?.includes(selectedTag);
+      });
+      const matchesBossFilter = !showBossesOnly || isBossEncounter(encounter);
       
-      return matchesLevel && matchesSearch && matchesTier && matchesTag && matchesBossFilter
-    }).sort((a, b) => a.Level - b.Level)
-  }, [selectedLevel, searchQuery, selectedTier, selectedTag, showBossesOnly])
+      return matchesLevel && matchesSearch && matchesTier && matchesTag && matchesBossFilter;
+    }).sort((a, b) => a.Level - b.Level);
+  }, [selectedLevel, searchQuery, selectedTier, selectedTag, showBossesOnly]);
 
   return (
     <div className="min-h-screen bg-gray-900 relative">

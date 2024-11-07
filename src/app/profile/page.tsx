@@ -6,6 +6,12 @@ import { getBuildsByUserId, getBuildById } from '@/lib/buildService'
 import { Build } from '@/types/types'
 import Link from 'next/link'
 import { updateProfile } from 'firebase/auth'
+import { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Profile | BazaarBuilds',
+  description: 'View and edit your BazaarBuilds profile.'
+}
 
 export default function ProfilePage() {
   const { user } = useAuth()

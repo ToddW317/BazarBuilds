@@ -1,3 +1,5 @@
+import { Metadata } from 'next'
+
 export default function TermsOfServicePage() {
   return (
     <div className="min-h-screen bg-gray-900 py-8">
@@ -100,4 +102,9 @@ export default function TermsOfServicePage() {
       </div>
     </div>
   )
+}
+
+export const metadata: Metadata = {
+  title: 'Terms of Service | BazaarBuilds',
+  description: 'BazaarBuilds terms of service and usage guidelines.'
 } 
