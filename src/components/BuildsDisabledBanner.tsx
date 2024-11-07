@@ -27,8 +27,7 @@ const ProgressBar = ({ current, target }: ProgressBarProps) => {
 }
 
 export default function BuildsDisabledBanner() {
-  // Updated the donation amount from $5 to $10
-  const currentAmount = 10 // Changed from 5 to 10 to reflect new donation
+  const currentAmount = 10
 
   return (
     <div className="bg-gradient-to-r from-blue-500/20 via-purple-500/20 to-blue-500/20 text-blue-300 px-4 py-3 rounded-lg mb-6 border border-blue-500/30">
