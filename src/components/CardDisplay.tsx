@@ -1,184 +1,163 @@
 'use client'
 
-import { useState } from 'react'
-import { Item } from '@/types/encounters'
-import { attributeIcons, tagIcons, decipherCustomAttribute } from '@/utils/cardIcons'
-
-// Update size widths to be more proportional
-const sizeWidths = {
-  Small: 'w-1/4',
-  Medium: 'w-1/3',
-  Large: 'w-2/5'
-} as const
-
-const tierStyles = {
-  Bronze: 'border-amber-600 shadow-[0_0_15px_rgba(217,119,6,0.3)]',
-  Silver: 'border-gray-400 shadow-[0_0_15px_rgba(156,163,175,0.3)]',
-  Gold: 'border-yellow-400 shadow-[0_0_15px_rgba(251,191,36,0.3)]',
-  Diamond: 'border-cyan-400 shadow-[0_0_15px_rgba(34,211,238,0.3)]'
-} as const
-
-function getTierColor(tier: string) {
-  switch (tier) {
-    case 'Bronze': return 'text-amber-600'
-    case 'Silver': return 'text-gray-400'
-    case 'Gold': return 'text-yellow-400'
-    case 'Diamond': return 'text-cyan-400'
-    case 'Legendary': return 'text-purple-400'
-    default: return 'text-white'
-  }
-}
+import { useState } from 'react';
+import { Item } from '@/types/encounters';
+import { getItemImageUrl } from '@/utils/imageUtils'; // Import statement added
+import { attributeIcons, tagIcons, decipherCustomAttribute } from '@/utils/cardIcons';
+import { heroColors, tierStyles, sizeWidths, getTierColor } from '@/utils/styleConstants';
+import { 
+  Clock, 
+  Zap, 
+  Sparkles, 
+  DollarSign, 
+  ArrowUpRight, 
+  ArrowDownRight,
+  Swords,
+  Shield,
+  Heart,
+  Flame,
+  Snowflake,
+  Skull,
+  Crown,
+  Maximize2
+} from 'lucide-react';
 
 interface CardDisplayProps {
-  item: Item
-  itemId: string
+  item: Item;
+  itemId: string;
 }
 
-// Add helper function to format image paths according to the pattern
-export const formatImagePath = (itemName: string, size: string = 'M', character: string = 'ADV') => {
-  // Clean up the item name
-  const cleanName = itemName
-    .replace(/\s+/g, '')  // Remove spaces
-    .replace(/[^a-zA-Z0-9]/g, ''); // Remove special characters
-
-  // Format size (S, M, L)
-  const sizeMap: { [key: string]: string } = {
-    'Small': 'S',
-    'Medium': 'M',
-    'Large': 'L'
-  };
-
-  // Format character codes
-  const charMap: { [key: string]: string } = {
-    'Jules': 'JUL',
-    'Dooley': 'DOO',
-    'Stelle': 'STE',
-    'Pygmalien': 'PYG',
-    'Vanessa': 'VAN',
-    'Common': 'ADV'
-  };
-
-  return `CF_${sizeMap[size] || 'M'}_${charMap[character] || 'ADV'}_${cleanName}_D.jpeg`;
-};
-
-// Add getItemImageUrl function
-const getItemImageUrl = (item: Item) => {
-  // Try to get the first hero, fallback to 'Common'
-  const hero = item.Heroes?.[0] || 'Common';
-  return `/items/${formatImagePath(item.InternalName, item.Size, hero)}`;
-};
-
-// Add hero color mapping
-const heroColors = {
-  'Jules': {
-    bg: 'bg-orange-900/20',
-    text: 'text-orange-300',
-    ring: 'ring-orange-500/50'
-  },
-  'Dooley': {
-    bg: 'bg-cyan-900/20',
-    text: 'text-cyan-300',
-    ring: 'ring-cyan-500/50'
-  },
-  'Stelle': {
-    bg: 'bg-yellow-900/20',
-    text: 'text-yellow-300',
-    ring: 'ring-yellow-500/50'
-  },
-  'Pygmalien': {
-    bg: 'bg-emerald-900/20',
-    text: 'text-emerald-300',
-    ring: 'ring-emerald-500/50'
-  },
-  'Vanessa': {
-    bg: 'bg-blue-900/20',
-    text: 'text-blue-300',
-    ring: 'ring-blue-500/50'
-  },
-  'Common': {
-    bg: 'bg-purple-900/20',
-    text: 'text-purple-300',
-    ring: 'ring-purple-500/50'
-  }
-} as const;
-
 export default function CardDisplay({ item, itemId }: CardDisplayProps) {
-  const [selectedTier, setSelectedTier] = useState<string>(item.StartingTier)
-  const tiers = Object.keys(item.Tiers)
-  const currentTierData = item.Tiers[selectedTier as keyof typeof item.Tiers]
+  const [selectedTier, setSelectedTier] = useState<string>(item.StartingTier);
+  const [imageError, setImageError] = useState(false);
+  const currentTierData = item.Tiers[selectedTier] || {};
+  const attributes = currentTierData.Attributes || {};
+
+  const [imagePath, setImagePath] = useState<string>(() => getItemImageUrl(item));
+
+  // Map attributes to icons and labels
+  const getAttributeIcon = (key: string) => {
+    switch(key) {
+      case 'BuyPrice':
+        return (
+          <div className="flex items-center gap-1 text-red-400">
+            <DollarSign className="w-4 h-4" />
+            <ArrowUpRight className="w-3 h-3" />
+          </div>
+        );
+      case 'SellPrice':
+        return (
+          <div className="flex items-center gap-1 text-green-400">
+            <DollarSign className="w-4 h-4" />
+            <ArrowDownRight className="w-3 h-3" />
+          </div>
+        );
+      case 'DamageAmount':
+        return <Swords className="w-4 h-4 text-red-400" />;
+      case 'ShieldAmount':
+        return <Shield className="w-4 h-4 text-blue-400" />;
+      case 'HealAmount':
+        return <Heart className="w-4 h-4 text-green-400" />;
+      case 'BurnAmount':
+        return <Flame className="w-4 h-4 text-orange-400" />;
+      case 'FreezeAmount':
+        return <Snowflake className="w-4 h-4 text-cyan-400" />;
+      case 'PoisonAmount':
+        return <Skull className="w-4 h-4 text-purple-400" />;
+      case 'HasteAmount':
+        return <Zap className="w-4 h-4 text-yellow-400" />;
+      case 'CooldownMax':
+        return <Clock className="w-4 h-4 text-blue-400" />;
+      case 'Multicast':
+        return <Sparkles className="w-4 h-4 text-purple-400" />;
+      default:
+        return null;
+    }
+  };
+
+  // Inside the CardDisplay component, add this helper function
+  const getDefaultTooltip = (attributes: Record<string, any>, tooltips: any[] | undefined) => {
+    // If tooltips array is empty or undefined, return "no abilities" message
+    if (!tooltips || tooltips.length === 0) {
+      return "No abilities for this card";
+    }
+    
+    // If there's a tooltip but it's empty, generate from attributes
+    if (tooltips[0] === "") {
+      const parts = [];
+      
+      if (attributes.DamageAmount) {
+        parts.push(`Deal ${attributes.DamageAmount} damage`);
+      }
+      if (attributes.CooldownMax) {
+        parts.push(`${(attributes.CooldownMax / 1000).toFixed(1)}s cooldown`);
+      }
+      if (attributes.Multicast && attributes.Multicast > 1) {
+        parts.push(`${attributes.Multicast}x multicast`);
+      }
+      
+      return parts.join(', ') || "No abilities for this card";
+    }
+    
+    return "No abilities for this card";
+  };
 
   return (
-    <div className={`${sizeWidths[item.Size]} p-2 transition-all duration-300`}>
+    <div className="w-full sm:w-1/2 md:w-1/3 lg:w-1/4 xl:w-1/5 2xl:w-1/6 p-2 transition-all duration-300 max-w-sm">
       <div 
         onClick={() => window.open(`/cards/${itemId}`, '_blank')}
         className={`
-          bg-gray-800 rounded-lg overflow-hidden border transition-all duration-300 h-full
+          bg-gray-800 rounded-lg overflow-hidden border transition-all duration-300
           ${tierStyles[selectedTier as keyof typeof tierStyles]}
           cursor-pointer hover:border-blue-500/50
+          h-full flex flex-col
         `}
       >
-        {/* Card Header */}
+        {/* Card Header with Image */}
         <div className="relative">
-          {/* Card Art */}
           <div className="relative aspect-video w-full">
-            <img
-              src={getItemImageUrl(item)}
-              alt={item.InternalName}
-              className="w-full h-full object-cover"
-              onError={(e) => {
-                const currentSrc = e.currentTarget.src;
-                if (!currentSrc.includes('default-item')) {
-                  if (item.ArtKey) {
-                    e.currentTarget.src = `/items/${item.ArtKey}.png`;
-                    return;
+            {!imageError ? (
+              <img
+                src={imagePath}
+                alt={item.InternalName}
+                className="w-full h-full object-cover"
+                onError={() => {
+                  if (!imageError) {
+                    setImageError(true);
+                    // Try to get alternative image
+                    const newPath = getItemImageUrl({...item, ArtKey: ''});
+                    if (newPath !== imagePath) {
+                      setImagePath(newPath);
+                    }
                   }
-                }
-                e.currentTarget.src = '/items/default-item.png';
-              }}
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-gray-900 to-transparent" />
-            
-            {/* Overlay Info */}
-            <div className="absolute bottom-0 left-0 right-0 p-3">
-              <div className="flex justify-between items-start gap-2">
-                <h3 className="text-lg font-bold text-white leading-tight">
-                  {item.InternalName}
-                </h3>
-                <span className={`
-                  px-2 py-0.5 rounded-full text-xs font-medium
-                  ${item.Size === 'Small' ? 'bg-green-500/20 text-green-300 ring-1 ring-green-500/50' :
-                    item.Size === 'Medium' ? 'bg-blue-500/20 text-blue-300 ring-1 ring-blue-500/50' :
-                    'bg-purple-500/20 text-purple-300 ring-1 ring-purple-500/50'}
-                `}>
-                  {item.Size}
-                </span>
+                }}
+              />
+            ) : (
+              <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+                <span className="text-gray-500">Image not available</span>
               </div>
+            )}
+            {/* Gradient Overlay */}
+            <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/60 to-transparent" />
+            
+            {/* Card Name Overlay */}
+            <div className="absolute bottom-0 left-0 right-0 p-3">
+              <h3 className="text-lg font-bold text-white drop-shadow-lg">
+                {item.InternalName}
+              </h3>
             </div>
           </div>
         </div>
 
         {/* Card Content */}
-        <div className="p-3 space-y-3">
-          {/* Tags */}
-          <div className="flex flex-wrap gap-1">
-            {item.Tags.map((tag, i) => (
-              <span 
-                key={i} 
-                className="inline-flex items-center text-xs px-1.5 py-0.5 rounded bg-gray-700/50 text-gray-300"
-                title={tag}
-              >
-                {tagIcons[tag]}
-              </span>
-            ))}
-          </div>
-
+        <div className="p-3 space-y-3 flex-1 flex flex-col">
           {/* Tier Selection */}
           <div className="flex gap-1">
-            {tiers.map(tier => (
+            {Object.keys(item.Tiers).map((tier) => (
               <button
                 key={tier}
                 onClick={(e) => {
-                  e.stopPropagation(); // Prevent card click when selecting tier
+                  e.stopPropagation();
                   setSelectedTier(tier);
                 }}
                 className={`
@@ -194,87 +173,83 @@ export default function CardDisplay({ item, itemId }: CardDisplayProps) {
             ))}
           </div>
 
-          {currentTierData && (
-            <div className="space-y-2">
-              {/* Attributes Grid */}
-              <div className="grid grid-cols-2 gap-1.5 text-sm">
-                {Object.entries(currentTierData.Attributes)
-                  .filter(([key]) => key !== 'CooldownMax')
+          {/* Hero and Size Tags */}
+          <div className="flex flex-wrap gap-1.5">
+            {/* Hero Tag */}
+            {item.Heroes.map((hero, index) => {
+              const colors = heroColors[hero as keyof typeof heroColors] || heroColors.Common;
+              return (
+                <span
+                  key={`hero-${index}`}
+                  className={`
+                    px-2 py-0.5 rounded flex items-center gap-1 text-xs
+                    ${colors.bg} ${colors.text} ${colors.ring}
+                  `}
+                >
+                  <Crown className="w-3 h-3" />
+                  {hero}
+                </span>
+              );
+            })}
+
+            {/* Size Tag */}
+            <span
+              className="px-2 py-0.5 bg-gray-700/50 rounded flex items-center gap-1 text-xs text-blue-300"
+            >
+              <Maximize2 className="w-3 h-3" />
+              {item.Size}
+            </span>
+          </div>
+
+          {/* Regular Tags */}
+          <div className="flex flex-wrap gap-1.5">
+            {item.Tags.map((tag, index) => (
+              <span
+                key={`tag-${index}`}
+                className="px-2 py-0.5 bg-gray-700/50 rounded text-xs text-gray-300"
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
+
+          {/* Attributes */}
+          {currentTierData && attributes && (
+            <>
+              {/* Tooltip Section */}
+              <div className="text-sm text-gray-300 mb-3">
+                {getDefaultTooltip(attributes, currentTierData.tooltips)}
+              </div>
+              
+              {/* Existing Attributes Section */}
+              <div className="grid grid-cols-2 gap-1.5 text-sm mt-auto">
+                {Object.entries(attributes)
+                  .filter(([key]) => !key.startsWith('Custom_'))
                   .map(([key, value]) => {
-                    const iconInfo = attributeIcons[key]
-                    if (!iconInfo) return null
+                    const icon = getAttributeIcon(key);
+                    if (!icon) return null;
 
                     return (
                       <div 
                         key={key}
                         className="flex items-center gap-1.5 bg-gray-700/30 rounded p-1.5"
-                        title={iconInfo.label}
                       >
-                        <span className="text-base">{iconInfo.icon}</span>
+                        {icon}
                         <span className="text-white">
-                          {key === 'Custom_0' 
-                            ? decipherCustomAttribute(key, value as number, item.Tags)
-                            : value
-                          }
+                          {typeof value === 'number' && key.includes('Price') 
+                            ? `${value}g`
+                            : typeof value === 'number' && value > 1000 
+                              ? `${(value / 1000).toFixed(1)}s`
+                              : value}
                         </span>
                       </div>
-                    )
+                    );
                   })}
               </div>
-
-              {/* Effects */}
-              {currentTierData.tooltips && (
-                <div className="space-y-1">
-                  {currentTierData.tooltips.map((tooltip, index) => {
-                    const tooltipContent = typeof tooltip === 'string' 
-                      ? tooltip 
-                      : tooltip?.Content?.Text || '';
-                    const tooltipType = typeof tooltip === 'string' 
-                      ? '' 
-                      : tooltip?.TooltipType || '';
-
-                    return (
-                      <div 
-                        key={index}
-                        className="text-xs text-gray-300 bg-gray-700/30 rounded p-1.5"
-                      >
-                        {tooltipType && (
-                          <span className="mr-1">
-                            {tooltipType === 'Active' ? '🎯' : 
-                             tooltipType === 'Passive' ? '✨' : ''}
-                          </span>
-                        )}
-                        {tooltipContent}
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-
-              {/* Heroes */}
-              {item.Heroes.length > 0 && item.Heroes[0] !== 'Common' && (
-                <div className="flex flex-wrap gap-1">
-                  {item.Heroes.map((hero, index) => {
-                    const colors = heroColors[hero as keyof typeof heroColors] || heroColors.Common;
-                    return (
-                      <span 
-                        key={index}
-                        className={`
-                          text-xs px-1.5 py-0.5 rounded ring-1
-                          ${colors.bg} ${colors.text} ${colors.ring}
-                          transition-colors duration-200 hover:bg-opacity-30
-                        `}
-                      >
-                        👑 {hero}
-                      </span>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
+            </>
           )}
         </div>
       </div>
     </div>
-  )
-} 
+  );
+}

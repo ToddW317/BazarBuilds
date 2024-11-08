@@ -1,31 +1,37 @@
-import WIPBadge from '@/components/WIPBadge'
-import { Suspense } from 'react'
-import CardDetailsContent from '@/components/CardDetailsContent'
 import { Metadata } from 'next'
+import { notFound } from 'next/navigation'
+import encounterData from '@/data/out.json'
+import { Item } from '@/types/encounters'
+import CardDetailsContent from '@/components/CardDetailsContent'
 
-// Define the params type
-type Props = {
-  params: Promise<{
-    id: string
-  }>
+interface Props {
+  params: { id: string }
 }
 
-// Add generateMetadata function
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const resolvedParams = await params
+  const items = encounterData.items as unknown as Record<string, Item>
+  const item = items[params.id]
+
+  if (!item) {
+    return {
+      title: 'Card Not Found | BazaarBuilds',
+      description: 'The requested card could not be found.'
+    }
+  }
+
   return {
-    title: `Card Details | ${resolvedParams.id}`,
-    description: 'View detailed information about this card.'
+    title: `${item.InternalName} | BazaarBuilds`,
+    description: `Details for ${item.InternalName} card in The Bazaar.`
   }
 }
 
-// Update the page component
-export default async function CardDetailsPage({ params }: Props) {
-  const resolvedParams = await params
-  
-  return (
-    <Suspense fallback={<div>Loading...</div>}>
-      <CardDetailsContent params={resolvedParams} />
-    </Suspense>
-  )
+export default async function CardPage({ params }: Props) {
+  const items = encounterData.items as unknown as Record<string, Item>
+  const item = items[params.id]
+
+  if (!item) {
+    notFound()
+  }
+
+  return <CardDetailsContent params={{ id: params.id }} initialCard={item} />
 } 

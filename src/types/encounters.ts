@@ -43,6 +43,7 @@ export interface Skill {
 }
 
 export interface Item {
+  id?: string;
   InternalName: string;
   StartingTier: string;
   Size: string;
