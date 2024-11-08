@@ -106,6 +106,46 @@ export default function CardDetailsContent({ params, initialCard }: CardDetailsC
     return Array.from(allKeys).sort();
   };
 
+  // Add this helper function at the top
+  const getAttributeDescription = (key: string): string => {
+    switch(key) {
+      case 'BuyPrice':
+        return 'Buy Price';
+      case 'SellPrice':
+        return 'Sell Price';
+      case 'DamageAmount':
+        return 'Damage';
+      case 'ShieldAmount':
+        return 'Shield';
+      case 'HealAmount':
+        return 'Heal';
+      case 'BurnAmount':
+        return 'Burn';
+      case 'FreezeAmount':
+        return 'Freeze';
+      case 'PoisonAmount':
+        return 'Poison';
+      case 'HasteAmount':
+        return 'Haste';
+      case 'CooldownMax':
+        return 'Cast Time';
+      case 'Multicast':
+        return 'Multicast';
+      default:
+        return key;
+    }
+  };
+
+  // Update the helper function to use the correct path structure
+  const getMonsterImageUrl = (monsterName: string): string => {
+    // Convert monster name to match file naming convention
+    const formattedName = monsterName
+      .replace(/\s+/g, '-') // Replace spaces with hyphens
+      .replace(/[^a-zA-Z0-9-]/g, ''); // Remove special characters except hyphens
+    
+    return `/encounters/${formattedName}.webp`;
+  };
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
       {/* Left Column - Image and Basic Info */}
@@ -227,14 +267,19 @@ export default function CardDetailsContent({ params, initialCard }: CardDetailsC
                       key={key}
                       className="flex items-center gap-2 bg-gray-700/30 rounded p-2"
                     >
-                      {icon}
-                      <span className="text-white">
-                        {typeof value === 'number' && key.includes('Price') 
-                          ? `${value}g`
-                          : typeof value === 'number' && value > 1000 
-                            ? `${(value / 1000).toFixed(1)}s`
-                            : value || '0'}
-                      </span>
+                      <div className="flex items-center gap-2 flex-1">
+                        <span className="text-gray-400 text-sm">
+                          {getAttributeDescription(key)}
+                        </span>
+                        {icon}
+                        <span className="text-white">
+                          {typeof value === 'number' && key.includes('Price') 
+                            ? `${value}g`
+                            : typeof value === 'number' && value > 1000 
+                              ? `${(value / 1000).toFixed(1)}s`
+                              : value || '0'}
+                        </span>
+                      </div>
                     </div>
                   );
                 })}
@@ -247,10 +292,36 @@ export default function CardDetailsContent({ params, initialCard }: CardDetailsC
         <div className="bg-gray-800 rounded-xl overflow-hidden">
           <div className="p-6">
             <h2 className="text-xl font-bold text-white mb-4">Abilities</h2>
-            <div className="text-gray-300">
-              {currentTierData.tooltips && currentTierData.tooltips[0] === "" 
-                ? "No abilities for this card"
-                : currentTierData.tooltips?.[0] || "No abilities for this card"}
+            <div className="bg-gray-700/30 rounded-lg p-4 space-y-3">
+              {/* Ability Header */}
+              <div className="flex items-center justify-between">
+                <span className="text-lg font-medium text-purple-300">
+                  {currentTierData.tooltips && currentTierData.tooltips[0] === "" 
+                    ? "Basic Attack"
+                    : "Active Ability"}
+                </span>
+                {currentTierData.Attributes.CooldownMax && (
+                  <span className="text-sm text-blue-300 flex items-center gap-2">
+                    <Clock className="w-4 h-4" />
+                    {(currentTierData.Attributes.CooldownMax / 1000).toFixed(1)}s
+                  </span>
+                )}
+              </div>
+              {/* Ability Description */}
+              <div className="text-gray-300">
+                {currentTierData.tooltips && currentTierData.tooltips[0] === "" 
+                  ? currentTierData.Attributes.DamageAmount 
+                    ? `Deal ${currentTierData.Attributes.DamageAmount} damage`
+                    : "No abilities for this card"
+                  : currentTierData.tooltips?.[0] || "No abilities for this card"}
+              </div>
+              {/* Additional Ability Info */}
+              {currentTierData.Attributes.Multicast > 1 && (
+                <div className="flex items-center gap-2 text-sm text-purple-300">
+                  <Sparkles className="w-4 h-4" />
+                  {currentTierData.Attributes.Multicast}x Multicast
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -260,15 +331,26 @@ export default function CardDetailsContent({ params, initialCard }: CardDetailsC
           <div className="bg-gray-800 rounded-xl overflow-hidden">
             <div className="p-6">
               <h2 className="text-xl font-bold text-white mb-4">Found In Encounters</h2>
-              <div className="space-y-2">
+              <div className="space-y-2 max-w-2xl">
                 {foundInEncounters.map((encounter, index) => (
                   <Link
                     key={index}
                     href={`/encounters?search=${encodeURIComponent(encounter.name)}`}
-                    className="block p-3 bg-gray-700/50 rounded-lg hover:bg-gray-700 transition-colors"
+                    className="block relative overflow-hidden rounded-lg hover:bg-gray-700 transition-colors group h-24"
                   >
-                    <div className="flex items-center justify-between">
-                      <span className="text-white">{encounter.name}</span>
+                    {/* Background Image */}
+                    <div 
+                      className="absolute inset-0 bg-cover bg-center opacity-20 group-hover:opacity-30 transition-opacity"
+                      style={{ 
+                        backgroundImage: `url(/encounters/${encounter.name.replace(/\s+/g, '-')}.webp)`,
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'center'
+                      }}
+                    />
+                    
+                    {/* Content */}
+                    <div className="relative h-full p-4 bg-gray-700/50 flex items-center justify-between">
+                      <span className="text-white font-medium text-lg">{encounter.name}</span>
                       <span className="text-sm text-gray-400">Level {encounter.level}</span>
                     </div>
                   </Link>

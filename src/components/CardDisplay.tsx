@@ -75,31 +75,61 @@ export default function CardDisplay({ item, itemId }: CardDisplayProps) {
     }
   };
 
-  // Inside the CardDisplay component, add this helper function
-  const getDefaultTooltip = (attributes: Record<string, any>, tooltips: any[] | undefined) => {
+  // Update the getDefaultTooltip function to include ability names
+  const getAbilityDisplay = (attributes: Record<string, any>, tooltips: any[] | undefined) => {
     // If tooltips array is empty or undefined, return "no abilities" message
     if (!tooltips || tooltips.length === 0) {
-      return "No abilities for this card";
+      return {
+        name: "No Ability",
+        description: "This card has no abilities"
+      };
     }
     
-    // If there's a tooltip but it's empty, generate from attributes
+    // If there's a tooltip but it's empty, return no abilities message
     if (tooltips[0] === "") {
-      const parts = [];
-      
-      if (attributes.DamageAmount) {
-        parts.push(`Deal ${attributes.DamageAmount} damage`);
-      }
-      if (attributes.CooldownMax) {
-        parts.push(`${(attributes.CooldownMax / 1000).toFixed(1)}s cooldown`);
-      }
-      if (attributes.Multicast && attributes.Multicast > 1) {
-        parts.push(`${attributes.Multicast}x multicast`);
-      }
-      
-      return parts.join(', ') || "No abilities for this card";
+      return {
+        name: "Basic Attack",
+        description: attributes.DamageAmount 
+          ? `Deal ${attributes.DamageAmount} damage` 
+          : "No abilities for this card"
+      };
     }
     
-    return "No abilities for this card";
+    // Return the tooltip text
+    return {
+      name: "Active Ability",
+      description: tooltips[0]
+    };
+  };
+
+  // Add the same helper function
+  const getAttributeDescription = (key: string): string => {
+    switch(key) {
+      case 'BuyPrice':
+        return 'Buy Price';
+      case 'SellPrice':
+        return 'Sell Price';
+      case 'DamageAmount':
+        return 'Damage';
+      case 'ShieldAmount':
+        return 'Shield';
+      case 'HealAmount':
+        return 'Heal';
+      case 'BurnAmount':
+        return 'Burn';
+      case 'FreezeAmount':
+        return 'Freeze';
+      case 'PoisonAmount':
+        return 'Poison';
+      case 'HasteAmount':
+        return 'Haste';
+      case 'CooldownMax':
+        return 'Cast Time';
+      case 'Multicast':
+        return 'Multicast';
+      default:
+        return key;
+    }
   };
 
   return (
@@ -213,40 +243,57 @@ export default function CardDisplay({ item, itemId }: CardDisplayProps) {
             ))}
           </div>
 
-          {/* Attributes */}
+          {/* Abilities Section - Updated */}
           {currentTierData && attributes && (
-            <>
-              {/* Tooltip Section */}
-              <div className="text-sm text-gray-300 mb-3">
-                {getDefaultTooltip(attributes, currentTierData.tooltips)}
+            <div className="bg-gray-700/30 rounded p-2 space-y-2">
+              {/* Ability Header */}
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-purple-300">
+                  {getAbilityDisplay(attributes, currentTierData.tooltips).name}
+                </span>
+                {attributes.CooldownMax && (
+                  <span className="text-xs text-blue-300 flex items-center gap-1">
+                    <Clock className="w-3 h-3" />
+                    {(attributes.CooldownMax / 1000).toFixed(1)}s
+                  </span>
+                )}
               </div>
-              
-              {/* Existing Attributes Section */}
-              <div className="grid grid-cols-2 gap-1.5 text-sm mt-auto">
-                {Object.entries(attributes)
-                  .filter(([key]) => !key.startsWith('Custom_'))
-                  .map(([key, value]) => {
-                    const icon = getAttributeIcon(key);
-                    if (!icon) return null;
+              {/* Ability Description */}
+              <p className="text-xs text-gray-300 leading-relaxed">
+                {getAbilityDisplay(attributes, currentTierData.tooltips).description}
+              </p>
+            </div>
+          )}
 
-                    return (
-                      <div 
-                        key={key}
-                        className="flex items-center gap-1.5 bg-gray-700/30 rounded p-1.5"
-                      >
-                        {icon}
-                        <span className="text-white">
-                          {typeof value === 'number' && key.includes('Price') 
-                            ? `${value}g`
-                            : typeof value === 'number' && value > 1000 
-                              ? `${(value / 1000).toFixed(1)}s`
-                              : value}
-                        </span>
-                      </div>
-                    );
-                  })}
-              </div>
-            </>
+          {/* Attributes Section */}
+          {currentTierData && attributes && (
+            <div className="grid grid-cols-2 gap-1.5 text-sm mt-auto">
+              {Object.entries(attributes)
+                .filter(([key]) => !key.startsWith('Custom_'))
+                .map(([key, value]) => {
+                  const icon = getAttributeIcon(key);
+                  if (!icon) return null;
+
+                  return (
+                    <div 
+                      key={key}
+                      className="flex items-center gap-1.5 bg-gray-700/30 rounded p-1.5"
+                    >
+                      <span className="text-gray-400 text-xs">
+                        {getAttributeDescription(key)}
+                      </span>
+                      {icon}
+                      <span className="text-white">
+                        {typeof value === 'number' && key.includes('Price') 
+                          ? `${value}g`
+                          : typeof value === 'number' && value > 1000 
+                            ? `${(value / 1000).toFixed(1)}s`
+                            : value}
+                      </span>
+                    </div>
+                  );
+                })}
+            </div>
           )}
         </div>
       </div>
