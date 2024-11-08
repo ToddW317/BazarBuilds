@@ -6,7 +6,7 @@ import encounterData from '@/data/out.json'
 import CardDisplay from '@/components/CardDisplay'
 import EncounterFilters from '@/components/EncounterFilters'
 import { ChevronDown, ChevronUp, Sword, Shield, Sparkles } from 'lucide-react'
-import { Encounter, EncounterData } from '@/types/encounters'
+import { Encounter, EncounterData, Skill } from '@/types/encounters'
 
 export default function EncountersPage() {
   const searchParams = useSearchParams()
@@ -30,6 +30,7 @@ export default function EncountersPage() {
   const [expandedMonster, setExpandedMonster] = useState<string | null>(null)
   const typedData = encounterData as unknown as EncounterData
   const monsters = typedData.monsters || {}
+  const skills = typedData.skills || {}
 
   // Get all available levels for filters
   const availableLevels = useMemo(() => {
@@ -115,6 +116,17 @@ export default function EncountersPage() {
     setFilteredMonsters(filtered)
   }
 
+  // Helper function to get skill tooltip
+  const getSkillTooltip = (skillId: string, tier: string): string => {
+    const skill = skills[skillId];
+    if (!skill) return "No tooltip available";
+
+    const tierData = skill.Tiers[tier];
+    if (!tierData) return "No tooltip available";
+
+    return tierData.Tooltips?.[0] || "No tooltip available";
+  };
+
   if (Object.keys(monsters).length === 0) {
     return (
       <main className="min-h-screen bg-gray-900 py-8">
@@ -185,62 +197,55 @@ export default function EncountersPage() {
                   {monster.Skills.length > 0 && (
                     <div className="mb-6">
                       <h3 className="text-lg font-semibold text-white mb-3">Skills</h3>
-                      <div className="flex flex-wrap gap-2">
+                      <div className="space-y-2">
                         {monster.Skills.map((skill, index) => (
-                          <span 
+                          <div 
                             key={index}
-                            className={`
-                              px-3 py-1.5 rounded-lg text-sm font-medium
-                              ${getTierColor(skill.Tier)}
-                              bg-gray-700/50
-                            `}
+                            className="p-3 bg-gray-700/50 rounded-lg"
                           >
-                            {skill.Name}
-                          </span>
+                            <div className="flex items-center justify-between mb-2">
+                              <span className="text-white font-medium">{skill.Name}</span>
+                              <span className={`
+                                px-2 py-0.5 rounded text-sm
+                                ${getTierColor(skill.Tier)}
+                              `}>
+                                {skill.Tier}
+                              </span>
+                            </div>
+                            <p className="text-sm text-gray-300">
+                              {getSkillTooltip(skill.SkillID, skill.Tier)}
+                            </p>
+                          </div>
                         ))}
                       </div>
                     </div>
                   )}
 
                   {/* Monster Items */}
-                  <div>
-                    <h3 className="text-lg font-semibold text-white mb-3">Rewards</h3>
-                    <div className="flex flex-wrap -mx-2">
-                      {monster.Items.map((item, index) => {
-                        // Get the base item details using the ItemID
-                        const itemDetails = typedData.items?.[item.ItemID]
-                        if (!itemDetails) return null
+                  {monster.Items.length > 0 && (
+                    <div>
+                      <h3 className="text-lg font-semibold text-white mb-3">Rewards</h3>
+                      <div className="flex flex-wrap -mx-2">
+                        {monster.Items.map((item, index) => {
+                          const itemDetails = typedData.items?.[item.ItemID]
+                          if (!itemDetails) return null
 
-                        // Create a complete item object with the correct image path
-                        const completeItem = {
-                          ...itemDetails,
-                          StartingTier: item.Tier,
-                          id: item.ItemID,
-                          InternalName: item.Name, // Use the item name from the monster's data
-                          Size: 'Small', // Monster drops are always small
-                          Heroes: ['Common'],
-                          ArtKey: itemDetails.ArtKey
-                        }
-
-                        // If we have an ArtKey, try to find the corresponding item for the image
-                        if (completeItem.ArtKey) {
-                          const artItem = typedData.items?.[completeItem.ArtKey]
-                          if (artItem) {
-                            // Use the art item's name for image lookup
-                            completeItem.InternalName = artItem.InternalName
-                          }
-                        }
-
-                        return (
-                          <CardDisplay
-                            key={`${item.ItemID}-${index}`}
-                            item={completeItem}
-                            itemId={item.ItemID}
-                          />
-                        )
-                      })}
+                          return (
+                            <CardDisplay
+                              key={`${item.ItemID}-${index}`}
+                              item={{
+                                ...itemDetails,
+                                id: item.ItemID,
+                                StartingTier: item.Tier,
+                                images: []
+                              }}
+                              itemId={item.ItemID}
+                            />
+                          );
+                        })}
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
               )}
             </div>
