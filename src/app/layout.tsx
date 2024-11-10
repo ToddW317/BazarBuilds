@@ -6,6 +6,7 @@ import { AuthProvider } from '@/contexts/AuthContext'
 import Footer from '@/components/Footer'
 import GoogleAd from '@/components/GoogleAd'
 
+
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
@@ -28,14 +29,14 @@ export default function RootLayout({
         />
       </head>
       <body className={`${inter.className} flex flex-col min-h-screen`}>
-        <AuthProvider>
-          <Navbar />
-          <main className="flex-grow">
-            <GoogleAd />
-            {children}
-          </main>
-          <Footer />
-        </AuthProvider>
+          <AuthProvider>
+            <Navbar />
+            <main className="flex-grow">
+              <GoogleAd slot="your-ad-slot" />
+              {children}
+            </main>
+            <Footer />
+          </AuthProvider>
       </body>
     </html>
   )

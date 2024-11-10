@@ -33,5 +33,5 @@ export default async function CardPage({ params }: Props) {
     notFound()
   }
 
-  return <CardDetailsContent params={{ id: params.id }} initialCard={item} />
+  return <CardDetailsContent item={item} itemId={params.id} />
 } 

@@ -1,365 +1,349 @@
 'use client'
 
-import { useState, useMemo } from 'react'
-import Link from 'next/link'
-import { Item, Encounter, EncounterData } from '@/types/encounters'
-import { getItemImageUrl } from '@/utils/imageUtils'
-import { heroColors, tierStyles, getTierColor } from '@/utils/styleConstants'
-import encounterData from '@/data/out.json'
+import { useState } from 'react';
+import { Item } from '@/types/encounters';
+import Image from 'next/image';
+import Link from 'next/link';
 import { 
-  Clock, 
-  Zap, 
-  Sparkles, 
-  DollarSign, 
-  ArrowUpRight, 
-  ArrowDownRight,
-  Swords,
-  Shield,
-  Heart,
-  Flame,
-  Snowflake,
-  Skull,
-  Crown,
-  Maximize2
-} from 'lucide-react'
+  Crown, 
+  Maximize2,
+  Clock,
+  DollarSign,
+} from 'lucide-react';
+import { getItemImagePath } from '@/utils/imageUtils';
+import PlaceholderImage from '@/components/PlaceholderImage';
+import { motion } from 'framer-motion';
+import { parseTooltip } from '@/utils/tooltipFormatter';
+import { getAttributeIcon } from '@/utils/attributeUtils';
+import { useRouter } from 'next/navigation';
+import encounterData from '@/data/out.json';
 
 interface CardDetailsContentProps {
-  params: { id: string }
-  initialCard: Item
+  item: Item;
+  itemId: string;
 }
 
-export default function CardDetailsContent({ params, initialCard }: CardDetailsContentProps) {
-  const [selectedTier, setSelectedTier] = useState<string>(initialCard.StartingTier)
-  const [imageError, setImageError] = useState(false)
-  const [imagePath, setImagePath] = useState<string>(() => getItemImageUrl(initialCard))
+interface EncounterInfo {
+  name: string;
+  image: string;
+  dropRate: number;
+}
 
-  const currentTierData = initialCard.Tiers[selectedTier]
-  const heroColor = initialCard.Heroes?.[0] 
-    ? heroColors[initialCard.Heroes[0] as keyof typeof heroColors] || heroColors.Common
-    : heroColors.Common
-
-  // Find encounters that drop this item
-  const foundInEncounters = useMemo(() => {
-    const encounters: { name: string; level: number }[] = []
-    const typedData = encounterData as unknown as EncounterData
-    
-    Object.entries(typedData.monsters || {}).forEach(([name, monster]) => {
-      if (monster.Items.some(item => item.ItemID === params.id)) {
-        encounters.push({
-          name,
-          level: monster.Level
-        })
+const getEncounterInfo = (itemId: string): EncounterInfo[] => {
+  const encounters: EncounterInfo[] = [];
+  
+  if (!encounterData?.monsters) {
+    console.warn('No monsters data available');
+    return encounters;
+  }
+  
+  try {
+    Object.entries(encounterData.monsters).forEach(([monsterName, monster]) => {
+      if (monster?.Items) {
+        const matchingItem = monster.Items.find(item => item.ItemID === itemId);
+        if (matchingItem) {
+          encounters.push({
+            name: monsterName,
+            image: `/encounters/${monsterName.toLowerCase()}.png`,
+            dropRate: 1 / monster.Items.length
+          });
+        }
       }
-    })
+    });
+  } catch (error) {
+    console.error('Error processing monster data:', error);
+  }
+  
+  return encounters;
+};
 
-    return encounters.sort((a, b) => a.level - b.level)
-  }, [params.id])
+export default function CardDetailsContent({ item, itemId }: CardDetailsContentProps) {
+  console.log('encounterData:', encounterData);
+  console.log('itemId:', itemId);
+  
+  const router = useRouter();
+  const encounters = getEncounterInfo(itemId);
+  console.log('Found encounters:', encounters);
 
-  // Map attributes to icons and labels
-  const getAttributeIcon = (key: string) => {
-    switch(key) {
-      case 'BuyPrice':
-        return (
-          <div className="flex items-center gap-1 text-red-400">
-            <DollarSign className="w-4 h-4" />
-            <ArrowUpRight className="w-3 h-3" />
-          </div>
-        );
-      case 'SellPrice':
-        return (
-          <div className="flex items-center gap-1 text-green-400">
-            <DollarSign className="w-4 h-4" />
-            <ArrowDownRight className="w-3 h-3" />
-          </div>
-        );
-      case 'DamageAmount':
-        return <Swords className="w-4 h-4 text-red-400" />;
-      case 'ShieldAmount':
-        return <Shield className="w-4 h-4 text-blue-400" />;
-      case 'HealAmount':
-        return <Heart className="w-4 h-4 text-green-400" />;
-      case 'BurnAmount':
-        return <Flame className="w-4 h-4 text-orange-400" />;
-      case 'FreezeAmount':
-        return <Snowflake className="w-4 h-4 text-cyan-400" />;
-      case 'PoisonAmount':
-        return <Skull className="w-4 h-4 text-purple-400" />;
-      case 'HasteAmount':
-        return <Zap className="w-4 h-4 text-yellow-400" />;
-      case 'CooldownMax':
-        return <Clock className="w-4 h-4 text-blue-400" />;
-      case 'Multicast':
-        return <Sparkles className="w-4 h-4 text-purple-400" />;
+  const [selectedTier, setSelectedTier] = useState<string>(item?.StartingTier || 'Bronze');
+  const [imageError, setImageError] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleEncounterClick = (monsterName: string) => {
+    router.push(`/encounters?search=${encodeURIComponent(monsterName)}&expanded=true`);
+  };
+
+  if (!item) {
+    console.log('Item is null or undefined');
+    return (
+      <div className="flex items-center justify-center min-h-[400px] bg-gray-800 rounded-lg">
+        <p className="text-gray-400">Loading item details...</p>
+      </div>
+    );
+  }
+
+  const currentTierData = item.Tiers?.[selectedTier] || {};
+  console.log('Current tier data:', currentTierData);
+
+  const getTierColor = (tier: string) => {
+    switch (tier) {
+      case 'Bronze':
+        return 'bg-amber-700';
+      case 'Silver':
+        return 'bg-gray-400';
+      case 'Gold':
+        return 'bg-yellow-500';
+      case 'Diamond':
+        return 'bg-cyan-300';
       default:
-        return null;
+        return 'bg-gray-600';
     }
   };
 
-  // Add this helper function at the top of the component
-  const getAllAttributeKeys = (tiers: Record<string, any>): string[] => {
-    const allKeys = new Set<string>();
-    Object.values(tiers).forEach(tier => {
-      Object.keys(tier.Attributes || {})
-        .filter(key => !key.startsWith('Custom_'))
-        .forEach(key => allKeys.add(key));
-    });
-    return Array.from(allKeys).sort();
-  };
-
-  // Add this helper function at the top
-  const getAttributeDescription = (key: string): string => {
-    switch(key) {
+  const getAttributeLabel = (key: string): string => {
+    switch (key) {
       case 'BuyPrice':
-        return 'Buy Price';
+        return 'Buy';
       case 'SellPrice':
-        return 'Sell Price';
+        return 'Sell';
       case 'DamageAmount':
         return 'Damage';
-      case 'ShieldAmount':
-        return 'Shield';
       case 'HealAmount':
         return 'Heal';
-      case 'BurnAmount':
-        return 'Burn';
-      case 'FreezeAmount':
-        return 'Freeze';
-      case 'PoisonAmount':
-        return 'Poison';
-      case 'HasteAmount':
-        return 'Haste';
+      case 'ShieldApplyAmount':
+        return 'Shield';
       case 'CooldownMax':
-        return 'Cast Time';
-      case 'Multicast':
-        return 'Multicast';
+        return 'Cooldown';
+      case 'Custom_0':
+        return 'Value';
       default:
-        return key;
+        return key.replace(/([A-Z])/g, ' $1').trim();
     }
   };
 
-  // Update the helper function to use the correct path structure
-  const getMonsterImageUrl = (monsterName: string): string => {
-    // Convert monster name to match file naming convention
-    const formattedName = monsterName
-      .replace(/\s+/g, '-') // Replace spaces with hyphens
-      .replace(/[^a-zA-Z0-9-]/g, ''); // Remove special characters except hyphens
+  const formatAttributeValue = (key: string, value: any): string => {
+    if (key === 'CooldownMax') {
+      return `${(value / 1000).toFixed(1)}s`;
+    }
+    return value.toString();
+  };
+
+  const shouldShowAttribute = (key: string, value: any) => {
+    if (key === 'Multicast' && value === 1) return false;
+    if (key === 'CastTime' && value === 0) return false;
+    if (key.startsWith('Custom_')) return false;
+    return true;
+  };
+
+  const renderTooltip = (tooltip: string, attributes: Record<string, any>) => {
+    const segments = parseTooltip(tooltip, attributes);
+
+    return (
+      <div className="flex flex-wrap items-start gap-x-1.5 gap-y-1 text-base leading-relaxed">
+        {segments.map(({ id, text, color, Icon }) => (
+          <span key={id} className="inline-flex items-center gap-1.5 whitespace-normal">
+            {Icon && <Icon className={`w-5 h-5 flex-shrink-0 ${color}`} />}
+            <span className={`${color ? `font-semibold ${color}` : 'text-gray-300'} break-words`}>
+              {text}
+            </span>
+          </span>
+        ))}
+      </div>
+    );
+  };
+
+  const getAllTooltips = (tierData: any) => {
+    if (!tierData) return [];
     
-    return `/encounters/${formattedName}.webp`;
+    const tooltips: string[] = [];
+    
+    // Main tooltips
+    if (Array.isArray(tierData.tooltips)) {
+      const validTooltips = tierData.tooltips
+        .filter((t: unknown): t is string => typeof t === 'string')
+        .filter((t: string) => t.trim() !== '');
+      tooltips.push(...validTooltips);
+    }
+    
+    // Additional tooltip arrays
+    Object.entries(tierData).forEach(([key, value]) => {
+      if (
+        key.toLowerCase().includes('tooltip') && 
+        Array.isArray(value) &&
+        key !== 'tooltips' &&
+        key !== 'TooltipIds'
+      ) {
+        const validTooltips = (value as unknown[])
+          .filter((t: unknown): t is string => typeof t === 'string')
+          .filter((t: string) => t.trim() !== '');
+        tooltips.push(...validTooltips);
+      }
+    });
+
+    return tooltips;
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      {/* Left Column - Image and Basic Info */}
-      <div className="lg:col-span-1 space-y-6">
-        {/* Card Image */}
-        <div className="bg-gray-800 rounded-xl overflow-hidden">
-          <div className="aspect-video relative">
-            {!imageError ? (
-              <img
-                src={imagePath}
-                alt={initialCard.InternalName}
-                className="w-full h-full object-cover"
-                onError={() => {
-                  if (!imageError) {
-                    setImageError(true);
-                    const newPath = getItemImageUrl({...initialCard, ArtKey: ''});
-                    if (newPath !== imagePath) {
-                      setImagePath(newPath);
-                    }
-                  }
-                }}
-              />
-            ) : (
-              <div className="w-full h-full bg-gray-700 flex items-center justify-center">
-                <span className="text-gray-400">No image</span>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Basic Info */}
-        <div className="bg-gray-800 rounded-xl overflow-hidden">
-          <div className="p-6">
-            <h1 className="text-2xl font-bold text-white mb-4">{initialCard.InternalName}</h1>
-            
-            {/* Tags */}
-            <div className="space-y-4">
-              {/* Hero Tags */}
-              <div className="flex flex-wrap gap-2">
-                {initialCard.Heroes.map((hero, index) => {
-                  const colors = heroColors[hero as keyof typeof heroColors] || heroColors.Common;
-                  return (
-                    <span
-                      key={`hero-${index}`}
-                      className={`
-                        px-2 py-0.5 rounded flex items-center gap-1 text-sm
-                        ${colors.bg} ${colors.text} ${colors.ring}
-                      `}
-                    >
-                      <Crown className="w-4 h-4" />
-                      {hero}
-                    </span>
-                  );
-                })}
-              </div>
-
-              {/* Size Tag */}
-              <div className="flex flex-wrap gap-2">
-                <span className="px-2 py-0.5 bg-gray-700/50 rounded flex items-center gap-1 text-sm text-blue-300">
-                  <Maximize2 className="w-4 h-4" />
-                  {initialCard.Size}
-                </span>
-              </div>
-
-              {/* Item Tags */}
-              <div className="flex flex-wrap gap-2">
-                {initialCard.Tags.map((tag, index) => (
-                  <span
-                    key={`tag-${index}`}
-                    className="px-2 py-0.5 bg-gray-700/50 rounded text-sm text-gray-300"
-                  >
-                    {tag}
-                  </span>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
+    <div className="space-y-4">
+      {/* Single Header Section */}
+      <div className="flex flex-col space-y-4">
+        <Link href="/cards" className="text-blue-400 hover:text-blue-300">
+          ← Back to Cards
+        </Link>
       </div>
 
-      {/* Right Column - Tiers, Abilities, Attributes */}
-      <div className="lg:col-span-2 space-y-6">
-        {/* Tier Selection */}
-        <div className="bg-gray-800 rounded-xl overflow-hidden">
-          <div className="p-6">
-            <div className="flex gap-2">
-              {Object.keys(initialCard.Tiers).map((tier) => (
-                <button
-                  key={tier}
-                  onClick={() => setSelectedTier(tier)}
-                  className={`
-                    px-3 py-1.5 rounded text-sm font-medium flex-1 transition-all
-                    ${tier === selectedTier 
-                      ? `${getTierColor(tier)} ring-1 ring-current` 
-                      : 'text-gray-400 hover:text-gray-200'
-                    }
-                  `}
-                >
-                  {tier}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
+      {/* Main Content Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 max-w-5xl mx-auto">
+        {/* Left Column - Image with Title */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: "easeOut" }}
+          className="relative w-full max-w-[400px] mx-auto"
+        >
+          <h1 className="text-2xl font-bold text-white mb-4">{item.InternalName}</h1>
+          <motion.div 
+            className="relative aspect-[4/3] bg-gray-700 rounded-lg overflow-hidden shadow-xl hover:shadow-2xl transition-shadow duration-300"
+            whileHover={{ 
+              scale: 1.01,
+              rotate: 1,
+              transition: { 
+                type: "spring",
+                stiffness: 400,
+                damping: 10
+              }
+            }}
+          >
+            <Image
+              src={getItemImagePath(item)}
+              alt={item.InternalName}
+              fill
+              className={`object-cover ${isLoading ? 'opacity-0' : 'opacity-100'} transition-opacity duration-300`}
+              onError={() => setImageError(true)}
+              onLoadingComplete={() => setIsLoading(false)}
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 500px"
+              priority
+            />
+            {isLoading && <PlaceholderImage />}
+            
+            {/* Optional: Add a subtle gradient overlay */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent pointer-events-none" />
+          </motion.div>
+        </motion.div>
 
-        {/* Attributes */}
-        {currentTierData && (
-          <div className="bg-gray-800 rounded-xl overflow-hidden">
-            <div className="p-6">
-              <h2 className="text-xl font-bold text-white mb-4">Attributes</h2>
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                {getAllAttributeKeys(initialCard.Tiers).map(key => {
-                  const value = currentTierData.Attributes[key];
+        {/* Right Column - Details */}
+        <div className="space-y-4">
+          {/* Tier Selection */}
+          <div className="flex space-x-2">
+            {Object.keys(item.Tiers).map((tier) => (
+              <button
+                key={tier}
+                onClick={() => setSelectedTier(tier)}
+                className={`px-4 py-2 rounded transition-colors ${
+                  tier === selectedTier
+                    ? `${getTierColor(tier)} text-white`
+                    : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+                }`}
+              >
+                {tier}
+              </button>
+            ))}
+          </div>
+
+          {/* Attributes */}
+          <div className="bg-gray-800/50 rounded-lg p-4">
+            <h2 className="text-xl font-bold text-white mb-3">Attributes</h2>
+            <div className="grid grid-cols-2 gap-3">
+              {Object.entries(currentTierData.Attributes || {})
+                .filter(([key, value]) => shouldShowAttribute(key, value))
+                .map(([key, value]) => {
                   const icon = getAttributeIcon(key);
                   if (!icon) return null;
 
                   return (
-                    <div 
-                      key={key}
-                      className="flex items-center gap-2 bg-gray-700/30 rounded p-2"
-                    >
-                      <div className="flex items-center gap-2 flex-1">
-                        <span className="text-gray-400 text-sm">
-                          {getAttributeDescription(key)}
-                        </span>
-                        {icon}
-                        <span className="text-white">
-                          {typeof value === 'number' && key.includes('Price') 
-                            ? `${value}g`
-                            : typeof value === 'number' && value > 1000 
-                              ? `${(value / 1000).toFixed(1)}s`
-                              : value || '0'}
-                        </span>
-                      </div>
+                    <div key={key} className="flex items-center space-x-2">
+                      {icon}
+                      <span className="text-gray-400">{getAttributeLabel(key)}:</span>
+                      <span className="text-white">{formatAttributeValue(key, value)}</span>
                     </div>
                   );
                 })}
-              </div>
             </div>
           </div>
-        )}
 
-        {/* Abilities */}
-        <div className="bg-gray-800 rounded-xl overflow-hidden">
-          <div className="p-6">
-            <h2 className="text-xl font-bold text-white mb-4">Abilities</h2>
-            <div className="bg-gray-700/30 rounded-lg p-4 space-y-3">
-              {/* Ability Header */}
-              <div className="flex items-center justify-between">
-                <span className="text-lg font-medium text-purple-300">
-                  {currentTierData.tooltips && currentTierData.tooltips[0] === "" 
-                    ? "Basic Attack"
-                    : "Active Ability"}
-                </span>
-                {currentTierData.Attributes.CooldownMax && (
-                  <span className="text-sm text-blue-300 flex items-center gap-2">
-                    <Clock className="w-4 h-4" />
-                    {(currentTierData.Attributes.CooldownMax / 1000).toFixed(1)}s
-                  </span>
-                )}
-              </div>
-              {/* Ability Description */}
-              <div className="text-gray-300">
-                {currentTierData.tooltips && currentTierData.tooltips[0] === "" 
-                  ? currentTierData.Attributes.DamageAmount 
-                    ? `Deal ${currentTierData.Attributes.DamageAmount} damage`
-                    : "No abilities for this card"
-                  : currentTierData.tooltips?.[0] || "No abilities for this card"}
-              </div>
-              {/* Additional Ability Info */}
-              {currentTierData.Attributes.Multicast > 1 && (
-                <div className="flex items-center gap-2 text-sm text-purple-300">
-                  <Sparkles className="w-4 h-4" />
-                  {currentTierData.Attributes.Multicast}x Multicast
+          {/* Description Section */}
+          <div className="bg-gray-800/50 rounded-lg p-4">
+            <h2 className="text-xl font-bold text-white mb-3">Description</h2>
+            <div className="space-y-3">
+              {currentTierData.tooltips?.map((tooltip: string, index: number) => (
+                <div 
+                  key={index} 
+                  className="border-b border-gray-600/50 last:border-0 pb-3 last:pb-0 pt-3 first:pt-0"
+                >
+                  {renderTooltip(tooltip, currentTierData.Attributes)}
                 </div>
-              )}
+              ))}
+              {/* Additional tooltips from other arrays */}
+              {Object.entries(currentTierData)
+                .filter(([key, value]) => 
+                  key.toLowerCase().includes('tooltip') && 
+                  Array.isArray(value) &&
+                  key !== 'tooltips' &&
+                  key !== 'TooltipIds'
+                )
+                .flatMap(([_, tooltipArray]) => tooltipArray)
+                .map((tooltip: string, index: number) => (
+                  <div 
+                    key={`additional-${index}`} 
+                    className="border-b border-gray-600/50 last:border-0 pb-3 last:pb-0 pt-3 first:pt-0"
+                  >
+                    {renderTooltip(tooltip, currentTierData.Attributes)}
+                  </div>
+                ))
+              }
             </div>
           </div>
         </div>
-
-        {/* Found In Encounters */}
-        {foundInEncounters.length > 0 && (
-          <div className="bg-gray-800 rounded-xl overflow-hidden">
-            <div className="p-6">
-              <h2 className="text-xl font-bold text-white mb-4">Found In Encounters</h2>
-              <div className="space-y-2 max-w-2xl">
-                {foundInEncounters.map((encounter, index) => (
-                  <Link
-                    key={index}
-                    href={`/encounters?search=${encodeURIComponent(encounter.name)}`}
-                    className="block relative overflow-hidden rounded-lg hover:bg-gray-700 transition-colors group h-24"
-                  >
-                    {/* Background Image */}
-                    <div 
-                      className="absolute inset-0 bg-cover bg-center opacity-20 group-hover:opacity-30 transition-opacity"
-                      style={{ 
-                        backgroundImage: `url(/encounters/${encounter.name.replace(/\s+/g, '-')}.webp)`,
-                        backgroundSize: 'cover',
-                        backgroundPosition: 'center'
-                      }}
-                    />
-                    
-                    {/* Content */}
-                    <div className="relative h-full p-4 bg-gray-700/50 flex items-center justify-between">
-                      <span className="text-white font-medium text-lg">{encounter.name}</span>
-                      <span className="text-sm text-gray-400">Level {encounter.level}</span>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
       </div>
+
+      {/* Encounters Section */}
+      {encounters.length > 0 && (
+        <div className="max-w-5xl mx-auto w-full mt-8">
+          <h2 className="text-xl font-bold text-white mb-4">Dropped By</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {encounters.map((encounter, index) => (
+              <motion.button
+                key={index}
+                onClick={() => handleEncounterClick(encounter.name)}
+                className="group relative overflow-hidden rounded-lg h-32"
+                whileHover={{ scale: 1.02 }}
+                transition={{ type: "spring", stiffness: 400, damping: 20 }}
+              >
+                {/* Dark overlay */}
+                <div className="absolute inset-0 bg-black/40 group-hover:bg-black/50 transition-colors duration-300" />
+                
+                {/* Content */}
+                <div className="absolute inset-0 p-4 flex flex-col justify-between z-10">
+                  <div className="flex justify-between items-start">
+                    <h3 className="text-lg font-bold text-white group-hover:text-blue-400 transition-colors">
+                      {encounter.name}
+                    </h3>
+                    <span className="bg-yellow-500/90 text-white text-xs font-bold px-2 py-1 rounded-full">
+                      {(encounter.dropRate * 100).toFixed(1)}% chance
+                    </span>
+                  </div>
+                  
+                  <div className="flex items-center text-gray-300 text-sm">
+                    <span className="group-hover:translate-x-1 transition-transform duration-300">
+                      View Details →
+                    </span>
+                  </div>
+                </div>
+              </motion.button>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
-  )
+  );
 }

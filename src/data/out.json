@@ -9671,7 +9671,7 @@
           ],
           "tooltips": [
             "Slow 1 items for 3.0 seconds.",
-            "Your other Slow items have +1000.0 Slow."
+            "Your other Slow items have +1.0 Slow."
           ]
         },
         "Gold": {
@@ -9695,7 +9695,7 @@
           ],
           "tooltips": [
             "Slow 2 items for 3.0 seconds.",
-            "Your other Slow items have +1000.0 Slow."
+            "Your other Slow items have +1.0 Slow."
           ]
         },
         "Diamond": {
@@ -9719,7 +9719,7 @@
           ],
           "tooltips": [
             "Slow 3 items for 3.0 seconds.",
-            "Your other Slow items have +1000.0 Slow."
+            "Your other Slow items have +1.0 Slow."
           ]
         }
       },
@@ -54996,7 +54996,7 @@
           ],
           "tooltips": [
             "Haste adjacent items for 1.0 seconds.",
-            "When you sell this, give your leftmost Haste item +1000 Haste."
+            "When you sell this, give your leftmost Haste item +1.0 Haste."
           ]
         },
         "Silver": {
@@ -59137,7 +59137,7 @@
             0
           ],
           "tooltips": [
-            "Increase a random enemy item's cooldown by 1000 seconds for the fight."
+            "Increase a random enemy item's cooldown by 1.0 seconds for the fight."
           ]
         },
         "Gold": {
@@ -79308,7 +79308,7 @@
           ],
           "tooltips": [
             "Slow 1 items for 1.0 seconds.",
-            "When you sell this, your leftmost Slow item gains 1000 second to Slow."
+            "When you sell this, your leftmost Slow item gains 1.0 second to Slow."
           ]
         },
         "Silver": {
@@ -83698,7 +83698,7 @@
           ],
           "tooltips": [
             "Freeze 1 item for 3.0 seconds.",
-            "Increase your other items' Freeze by 1000.0 seconds."
+            "Increase your other items' Freeze by 1.0 seconds."
           ]
         },
         "Gold": {
@@ -83722,7 +83722,7 @@
           ],
           "tooltips": [
             "Freeze 1 item for 4.0 seconds.",
-            "Increase your other items' Freeze by 1000.0 seconds."
+            "Increase your other items' Freeze by 1.0 seconds."
           ]
         },
         "Diamond": {
@@ -83746,7 +83746,7 @@
           ],
           "tooltips": [
             "Freeze 1 item for 5.0 seconds.",
-            "Increase your other items' Freeze by 1000.0 seconds."
+            "Increase your other items' Freeze by 1.0 seconds."
           ]
         }
       },
@@ -87572,7 +87572,7 @@
           ],
           "tooltips": [
             "When you use an item, Shield 10.",
-            "Enemy item cooldowns are increased by 1000."
+            "Enemy item cooldowns are increased by 1.0."
           ]
         },
         "Diamond": {
@@ -87595,7 +87595,7 @@
           ],
           "tooltips": [
             "When you use an item, Shield 20.",
-            "Enemy item cooldowns are increased by 2000."
+            "Enemy item cooldowns are increased by 2.0."
           ]
         }
       },
@@ -88236,7 +88236,7 @@
             0
           ],
           "tooltips": [
-            "When you sell this, your leftmost Freeze item gains 1000 second to Freeze."
+            "When you sell this, your leftmost Freeze item gains 1.0 second to Freeze."
           ]
         }
       },
@@ -103849,7 +103849,7 @@
             0
           ],
           "Tooltips": [
-            "The first time you Haste each fight, Freeze an item for 3000 seconds."
+            "The first time you Haste each fight, Freeze an item for 3.0 seconds."
           ]
         },
         "Silver": {
@@ -103866,7 +103866,7 @@
             0
           ],
           "Tooltips": [
-            "The first time you Haste each fight, Freeze an item for 4000 seconds."
+            "The first time you Haste each fight, Freeze an item for 4.0 seconds."
           ]
         },
         "Gold": {
@@ -103883,7 +103883,7 @@
             0
           ],
           "Tooltips": [
-            "The first time you Haste each fight, Freeze an item for 5000 seconds."
+            "The first time you Haste each fight, Freeze an item for 5.0 seconds."
           ]
         },
         "Diamond": {
@@ -103900,7 +103900,7 @@
             0
           ],
           "Tooltips": [
-            "The first time you Haste each fight, Freeze an item for 6000 seconds."
+            "The first time you Haste each fight, Freeze an item for 6.0 seconds."
           ]
         }
       },
@@ -104881,7 +104881,7 @@
             0
           ],
           "Tooltips": [
-            "The first time you use the Core each fight, freeze an item for 6000 second."
+            "The first time you use the Core each fight, freeze an item for 6.0 second."
           ]
         }
       },
@@ -105318,7 +105318,7 @@
             0
           ],
           "Tooltips": [
-            "When you use the Core, slow {ability.0.targets} item for 4000 seconds."
+            "When you use the Core, slow {ability.0.targets} item for 4.0 seconds."
           ]
         },
         "Diamond": {
@@ -105335,7 +105335,7 @@
             1
           ],
           "Tooltips": [
-            "When you use the Core, slow {ability.0.targets} items for 4000 seconds."
+            "When you use the Core, slow {ability.0.targets} items for 4.0 seconds."
           ]
         }
       },
@@ -105513,7 +105513,7 @@
             0
           ],
           "Tooltips": [
-            "When you use a small item, Charge a large item for 1000 second."
+            "When you use a small item, Charge a large item for 1.0 second."
           ]
         }
       },
@@ -105801,7 +105801,7 @@
             0
           ],
           "Tooltips": [
-            "When you burn, Haste an item for 1000 seconds."
+            "When you burn, Haste an item for 1.0 seconds."
           ]
         },
         "Diamond": {
@@ -105817,7 +105817,7 @@
             0
           ],
           "Tooltips": [
-            "When you burn, Haste an item for 2000 seconds."
+            "When you burn, Haste an item for 2.0 seconds."
           ]
         }
       },
@@ -106434,7 +106434,7 @@
             0
           ],
           "Tooltips": [
-            "The first 5 times you Crit each fight, charge an item 2000 second."
+            "The first 5 times you Crit each fight, charge an item 2.0 second."
           ]
         },
         "Diamond": {
@@ -106454,7 +106454,7 @@
             0
           ],
           "Tooltips": [
-            "The first 5 times you Crit each fight, charge an item 3000 second."
+            "The first 5 times you Crit each fight, charge an item 3.0 second."
           ]
         }
       },
@@ -106590,7 +106590,7 @@
             0
           ],
           "Tooltips": [
-            "When you use a large item, haste 2 small items for 2000 seconds."
+            "When you use a large item, haste 2 small items for 2.0 seconds."
           ]
         },
         "Diamond": {
@@ -106607,7 +106607,7 @@
             1
           ],
           "Tooltips": [
-            "When you use a large item, haste 3 small items for 3000 seconds."
+            "When you use a large item, haste 3 small items for 3.0 seconds."
           ]
         }
       },
@@ -106710,7 +106710,7 @@
             0
           ],
           "Tooltips": [
-            "The first time you fall below half health each fight, Freeze all enemy items for 1000 seconds."
+            "The first time you fall below half health each fight, Freeze all enemy items for 1.0 seconds."
           ]
         },
         "Gold": {
@@ -106727,7 +106727,7 @@
             0
           ],
           "Tooltips": [
-            "The first time you fall below half health each fight, Freeze all enemy items for 2000 seconds."
+            "The first time you fall below half health each fight, Freeze all enemy items for 2.0 seconds."
           ]
         },
         "Diamond": {
@@ -106744,7 +106744,7 @@
             0
           ],
           "Tooltips": [
-            "The first time you fall below half health each fight, Freeze all enemy items for 3000 seconds."
+            "The first time you fall below half health each fight, Freeze all enemy items for 3.0 seconds."
           ]
         }
       },
@@ -107092,7 +107092,7 @@
             0
           ],
           "Tooltips": [
-            "The first time you Slow each fight, Freeze an item for 3000 seconds."
+            "The first time you Slow each fight, Freeze an item for 3.0 seconds."
           ]
         },
         "Silver": {
@@ -107109,7 +107109,7 @@
             0
           ],
           "Tooltips": [
-            "The first time you Slow each fight, Freeze an item for 4000 seconds."
+            "The first time you Slow each fight, Freeze an item for 4.0 seconds."
           ]
         },
         "Gold": {
@@ -107126,7 +107126,7 @@
             0
           ],
           "Tooltips": [
-            "The first time you Slow each fight, Freeze an item for 5000 seconds."
+            "The first time you Slow each fight, Freeze an item for 5.0 seconds."
           ]
         },
         "Diamond": {
@@ -107143,7 +107143,7 @@
             0
           ],
           "Tooltips": [
-            "The first time you Slow each fight, Freeze an item for 6000 seconds."
+            "The first time you Slow each fight, Freeze an item for 6.0 seconds."
           ]
         }
       },
@@ -107820,7 +107820,7 @@
             0
           ],
           "Tooltips": [
-            "When you use a weapon, haste another weapon 1000 second."
+            "When you use a weapon, haste another weapon 1.0 second."
           ]
         },
         "Diamond": {
@@ -107836,7 +107836,7 @@
             1
           ],
           "Tooltips": [
-            "When you use a weapon, haste another weapon 2000 seconds."
+            "When you use a weapon, haste another weapon 2.0 seconds."
           ]
         }
       },
@@ -107926,7 +107926,7 @@
             0
           ],
           "Tooltips": [
-            "At the start of each fight, slow an item for 3000 seconds."
+            "At the start of each fight, slow an item for 3.0 seconds."
           ]
         },
         "Silver": {
@@ -107942,7 +107942,7 @@
             0
           ],
           "Tooltips": [
-            "At the start of each fight, slow an item for 5000 seconds."
+            "At the start of each fight, slow an item for 5.0 seconds."
           ]
         },
         "Gold": {
@@ -107958,7 +107958,7 @@
             0
           ],
           "Tooltips": [
-            "At the start of each fight, slow an item for 7000 seconds."
+            "At the start of each fight, slow an item for 7.0 seconds."
           ]
         },
         "Diamond": {
@@ -107974,7 +107974,7 @@
             0
           ],
           "Tooltips": [
-            "At the start of each fight, slow an item for 9000 seconds."
+            "At the start of each fight, slow an item for 9.0 seconds."
           ]
         }
       },
@@ -108592,7 +108592,7 @@
             0
           ],
           "Tooltips": [
-            "When you use your rightmost item, slow an item for 1000 second."
+            "When you use your rightmost item, slow an item for 1.0 second."
           ]
         },
         "Diamond": {
@@ -108608,7 +108608,7 @@
             1
           ],
           "Tooltips": [
-            "When you use your rightmost item, slow an item for 2000 seconds."
+            "When you use your rightmost item, slow an item for 2.0 seconds."
           ]
         }
       },
@@ -108714,7 +108714,7 @@
             0
           ],
           "Tooltips": [
-            "When you use a food, haste the item to the right of it for 2000 seconds."
+            "When you use a food, haste the item to the right of it for 2.0 seconds."
           ]
         },
         "Diamond": {
@@ -108730,7 +108730,7 @@
             0
           ],
           "Tooltips": [
-            "When you use a food, haste the item to the right of it for 3000 seconds."
+            "When you use a food, haste the item to the right of it for 3.0 seconds."
           ]
         }
       },
@@ -108932,7 +108932,7 @@
             1
           ],
           "Tooltips": [
-            "When you use a food, slow it for 2000 seconds and give it 10 joy for the fight."
+            "When you use a food, slow it for 2.0 seconds and give it 10 joy for the fight."
           ]
         },
         "Diamond": {
@@ -109841,7 +109841,7 @@
             0
           ],
           "Tooltips": [
-            "When you use a non-Weapon item, a Weapon gains Haste for 1000 second."
+            "When you use a non-Weapon item, a Weapon gains Haste for 1.0 second."
           ]
         },
         "Diamond": {
@@ -109858,7 +109858,7 @@
             1
           ],
           "Tooltips": [
-            "When you use a non-Weapon item, a Weapon gains Haste for 2000 seconds."
+            "When you use a non-Weapon item, a Weapon gains Haste for 2.0 seconds."
           ]
         }
       },
@@ -110056,7 +110056,7 @@
             0
           ],
           "Tooltips": [
-            "When you use your leftmost item, Haste an item for 1000 second."
+            "When you use your leftmost item, Haste an item for 1.0 second."
           ]
         },
         "Diamond": {
@@ -110072,7 +110072,7 @@
             1
           ],
           "Tooltips": [
-            "When you use your leftmost item, Haste an item for 2000 seconds."
+            "When you use your leftmost item, Haste an item for 2.0 seconds."
           ]
         }
       },
@@ -110210,7 +110210,7 @@
             0
           ],
           "Tooltips": [
-            "The first time you Poison each fight, Freeze an item for 3000 seconds."
+            "The first time you Poison each fight, Freeze an item for 3.0 seconds."
           ]
         },
         "Silver": {
@@ -110228,7 +110228,7 @@
             0
           ],
           "Tooltips": [
-            "The first time you Poison each fight, Freeze an item for 4000 seconds."
+            "The first time you Poison each fight, Freeze an item for 4.0 seconds."
           ]
         },
         "Gold": {
@@ -110246,7 +110246,7 @@
             0
           ],
           "Tooltips": [
-            "The first time you Poison each fight, Freeze an item for 5000 seconds."
+            "The first time you Poison each fight, Freeze an item for 5.0 seconds."
           ]
         },
         "Diamond": {
@@ -110264,7 +110264,7 @@
             0
           ],
           "Tooltips": [
-            "The first time you Poison each fight, Freeze an item for 6000 seconds."
+            "The first time you Poison each fight, Freeze an item for 6.0 seconds."
           ]
         }
       },
@@ -110293,7 +110293,7 @@
             0
           ],
           "Tooltips": [
-            "When you Crit, Haste an item for 1000 second."
+            "When you Crit, Haste an item for 1.0 second."
           ]
         },
         "Gold": {
@@ -110309,7 +110309,7 @@
             1
           ],
           "Tooltips": [
-            "When you Crit, Haste an item for 2000 seconds."
+            "When you Crit, Haste an item for 2.0 seconds."
           ]
         },
         "Diamond": {
@@ -110325,7 +110325,7 @@
             1
           ],
           "Tooltips": [
-            "When you Crit, Haste an item for 3000 seconds."
+            "When you Crit, Haste an item for 3.0 seconds."
           ]
         }
       },
@@ -110356,7 +110356,7 @@
             0
           ],
           "Tooltips": [
-            "When you use a tool, a Tool gains haste for 1000 seconds."
+            "When you use a tool, a Tool gains haste for 1.0 seconds."
           ]
         },
         "Diamond": {
@@ -110372,7 +110372,7 @@
             0
           ],
           "Tooltips": [
-            "When you use a tool, a Tool gains haste for 2000 seconds."
+            "When you use a tool, a Tool gains haste for 2.0 seconds."
           ]
         }
       },
@@ -111318,7 +111318,7 @@
             0
           ],
           "Tooltips": [
-            "When you use a weapon, Freeze a smaller item for 2000 seconds."
+            "When you use a weapon, Freeze a smaller item for 2.0 seconds."
           ]
         }
       },
@@ -111585,7 +111585,7 @@
             0
           ],
           "Tooltips": [
-            "When you Burn, Haste the Core for 1000 seconds."
+            "When you Burn, Haste the Core for 1.0 seconds."
           ]
         },
         "Diamond": {
@@ -111601,7 +111601,7 @@
             0
           ],
           "Tooltips": [
-            "When you Burn, Haste the Core for 2000 seconds."
+            "When you Burn, Haste the Core for 2.0 seconds."
           ]
         }
       },
@@ -111961,7 +111961,7 @@
             0
           ],
           "Tooltips": [
-            "When you Slow, Haste a vehicle for 2000 seconds."
+            "When you Slow, Haste a vehicle for 2.0 seconds."
           ]
         },
         "Diamond": {
@@ -111977,7 +111977,7 @@
             0
           ],
           "Tooltips": [
-            "When you Slow, Haste a vehicle for 4000 seconds."
+            "When you Slow, Haste a vehicle for 4.0 seconds."
           ]
         }
       },
@@ -112229,7 +112229,7 @@
             0
           ],
           "Tooltips": [
-            "When you use your slowest weapon, freeze a smaller item for 1000 second."
+            "When you use your slowest weapon, freeze a smaller item for 1.0 second."
           ]
         },
         "Diamond": {
@@ -112246,7 +112246,7 @@
             1
           ],
           "Tooltips": [
-            "When you use your slowest weapon, freeze a smaller item for 2000 seconds."
+            "When you use your slowest weapon, freeze a smaller item for 2.0 seconds."
           ]
         }
       },
@@ -112377,7 +112377,7 @@
             0
           ],
           "Tooltips": [
-            "At the start of each fight, Freeze all non-weapon items for 2000 seconds."
+            "At the start of each fight, Freeze all non-weapon items for 2.0 seconds."
           ]
         },
         "Diamond": {
@@ -112393,7 +112393,7 @@
             0
           ],
           "Tooltips": [
-            "At the start of each fight, Freeze all non-weapon items for 3000 seconds."
+            "At the start of each fight, Freeze all non-weapon items for 3.0 seconds."
           ]
         }
       },
@@ -113154,7 +113154,7 @@
             0
           ],
           "Tooltips": [
-            "The first time you fall below half health each fight, Freeze an item for 3000 seconds."
+            "The first time you fall below half health each fight, Freeze an item for 3.0 seconds."
           ]
         },
         "Silver": {
@@ -113171,7 +113171,7 @@
             0
           ],
           "Tooltips": [
-            "The first time you fall below half health each fight, Freeze an item for 6000 seconds."
+            "The first time you fall below half health each fight, Freeze an item for 6.0 seconds."
           ]
         },
         "Gold": {
@@ -113188,7 +113188,7 @@
             0
           ],
           "Tooltips": [
-            "The first time you fall below half health each fight, Freeze an item for 9000 seconds."
+            "The first time you fall below half health each fight, Freeze an item for 9.0 seconds."
           ]
         },
         "Diamond": {
@@ -113205,7 +113205,7 @@
             0
           ],
           "Tooltips": [
-            "The first time you fall below half health each fight, Freeze an item for 12000 seconds."
+            "The first time you fall below half health each fight, Freeze an item for 12.0 seconds."
           ]
         }
       },
@@ -113444,7 +113444,7 @@
             0
           ],
           "Tooltips": [
-            "When you reload a potion, give an item haste for 3000 seconds."
+            "When you reload a potion, give an item haste for 3.0 seconds."
           ]
         },
         "Diamond": {
@@ -113460,7 +113460,7 @@
             0
           ],
           "Tooltips": [
-            "When you reload a potion, give an item haste for 4000 seconds."
+            "When you reload a potion, give an item haste for 4.0 seconds."
           ]
         }
       },
@@ -114328,7 +114328,7 @@
             0
           ],
           "Tooltips": [
-            "When you use the Core, Haste {ability.0.targets} item for 4000 seconds."
+            "When you use the Core, Haste {ability.0.targets} item for 4.0 seconds."
           ]
         },
         "Diamond": {
@@ -114345,7 +114345,7 @@
             1
           ],
           "Tooltips": [
-            "When you use the Core, Haste {ability.0.targets} items for 4000 seconds."
+            "When you use the Core, Haste {ability.0.targets} items for 4.0 seconds."
           ]
         }
       },
@@ -114881,7 +114881,7 @@
             0
           ],
           "Tooltips": [
-            "The first time you use a Large item each fight, Freeze an item for 4000 seconds."
+            "The first time you use a Large item each fight, Freeze an item for 4.0 seconds."
           ]
         },
         "Silver": {
@@ -114899,7 +114899,7 @@
             1
           ],
           "Tooltips": [
-            "The first time you use a Large item each fight, Freeze an item for 6000 seconds."
+            "The first time you use a Large item each fight, Freeze an item for 6.0 seconds."
           ]
         },
         "Gold": {
@@ -114916,7 +114916,7 @@
             0
           ],
           "Tooltips": [
-            "The first time you use a Large item each fight, Freeze an item for 8000 seconds."
+            "The first time you use a Large item each fight, Freeze an item for 8.0 seconds."
           ]
         },
         "Diamond": {
@@ -114933,7 +114933,7 @@
             0
           ],
           "Tooltips": [
-            "The first time you use a Large item each fight, Freeze an item for 10000 seconds."
+            "The first time you use a Large item each fight, Freeze an item for 10.0 seconds."
           ]
         }
       },
@@ -115687,7 +115687,7 @@
             0
           ],
           "Tooltips": [
-            "When any non-weapon item is used, slow it for 2000 seconds."
+            "When any non-weapon item is used, slow it for 2.0 seconds."
           ]
         },
         "Diamond": {
@@ -115703,7 +115703,7 @@
             0
           ],
           "Tooltips": [
-            "When any non-weapon item is used, slow it for 4000 seconds."
+            "When any non-weapon item is used, slow it for 4.0 seconds."
           ]
         }
       },
@@ -116143,7 +116143,7 @@
             0
           ],
           "Tooltips": [
-            "When you use a large item, haste an item for 3000 seconds."
+            "When you use a large item, haste an item for 3.0 seconds."
           ]
         },
         "Diamond": {
@@ -116159,7 +116159,7 @@
             0
           ],
           "Tooltips": [
-            "When you use a large item, haste an item for 4000 seconds."
+            "When you use a large item, haste an item for 4.0 seconds."
           ]
         }
       },
@@ -116482,7 +116482,7 @@
             0
           ],
           "Tooltips": [
-            "The first time you fall below half health each fight, slow enemy items for 3000 seconds."
+            "The first time you fall below half health each fight, slow enemy items for 3.0 seconds."
           ]
         },
         "Diamond": {
@@ -116499,7 +116499,7 @@
             0
           ],
           "Tooltips": [
-            "The first time you fall below half health each fight, slow enemy items for 4000 seconds."
+            "The first time you fall below half health each fight, slow enemy items for 4.0 seconds."
           ]
         }
       },
@@ -116528,7 +116528,7 @@
             0
           ],
           "Tooltips": [
-            "At the start of each fight, give all your vehicles haste for 4000 seconds."
+            "At the start of each fight, give all your vehicles haste for 4.0 seconds."
           ]
         },
         "Diamond": {
@@ -116544,7 +116544,7 @@
             0
           ],
           "Tooltips": [
-            "At the start of each fight, give all your vehicles haste for 6000 seconds."
+            "At the start of each fight, give all your vehicles haste for 6.0 seconds."
           ]
         }
       },
@@ -116597,7 +116597,7 @@
             0
           ],
           "Tooltips": [
-            "The first time you freeze each fight, Haste your items for 3000 seconds."
+            "The first time you freeze each fight, Haste your items for 3.0 seconds."
           ]
         },
         "Diamond": {
@@ -116614,7 +116614,7 @@
             0
           ],
           "Tooltips": [
-            "The first time you freeze each fight, Haste your items for 5000 seconds."
+            "The first time you freeze each fight, Haste your items for 5.0 seconds."
           ]
         }
       },
@@ -116645,7 +116645,7 @@
             0
           ],
           "Tooltips": [
-            "The first time you Freeze each fight, Slow all your opponent's items for 3000 seconds."
+            "The first time you Freeze each fight, Slow all your opponent's items for 3.0 seconds."
           ]
         },
         "Gold": {
@@ -116662,7 +116662,7 @@
             0
           ],
           "Tooltips": [
-            "The first time you Freeze each fight, Slow all your opponent's items for 5000 seconds."
+            "The first time you Freeze each fight, Slow all your opponent's items for 5.0 seconds."
           ]
         },
         "Diamond": {
@@ -116679,7 +116679,7 @@
             0
           ],
           "Tooltips": [
-            "The first time you Freeze each fight, Slow all your opponent's items for 7000 seconds."
+            "The first time you Freeze each fight, Slow all your opponent's items for 7.0 seconds."
           ]
         }
       },
@@ -116832,7 +116832,7 @@
             0
           ],
           "Tooltips": [
-            "At the start of each fight, Haste {ability.0.targets} items for 3000 seconds."
+            "At the start of each fight, Haste {ability.0.targets} items for 3.0 seconds."
           ]
         },
         "Silver": {
@@ -116849,7 +116849,7 @@
             0
           ],
           "Tooltips": [
-            "At the start of each fight, Haste {ability.0.targets} items for 3000 seconds."
+            "At the start of each fight, Haste {ability.0.targets} items for 3.0 seconds."
           ]
         },
         "Gold": {
@@ -116866,7 +116866,7 @@
             0
           ],
           "Tooltips": [
-            "At the start of each fight, Haste {ability.0.targets} items for 3000 seconds."
+            "At the start of each fight, Haste {ability.0.targets} items for 3.0 seconds."
           ]
         },
         "Diamond": {
@@ -116883,7 +116883,7 @@
             0
           ],
           "Tooltips": [
-            "At the start of each fight, Haste {ability.0.targets} items for 3000 seconds."
+            "At the start of each fight, Haste {ability.0.targets} items for 3.0 seconds."
           ]
         }
       },
@@ -117258,7 +117258,7 @@
             0
           ],
           "Tooltips": [
-            "At the start of each fight, Haste {ability.0.targets} Aquatic items for 6000 seconds."
+            "At the start of each fight, Haste {ability.0.targets} Aquatic items for 6.0 seconds."
           ]
         },
         "Gold": {
@@ -117323,7 +117323,7 @@
             0
           ],
           "Tooltips": [
-            "The first time you use a Large item each fight, Haste adjacent items for 4000 seconds."
+            "The first time you use a Large item each fight, Haste adjacent items for 4.0 seconds."
           ]
         },
         "Gold": {
@@ -117340,7 +117340,7 @@
             0
           ],
           "Tooltips": [
-            "The first time you use a Large item each fight, Haste adjacent items for 8000 seconds."
+            "The first time you use a Large item each fight, Haste adjacent items for 8.0 seconds."
           ]
         },
         "Diamond": {
@@ -117357,7 +117357,7 @@
             0
           ],
           "Tooltips": [
-            "The first time you use a Large item each fight, Haste adjacent items for 12000 seconds."
+            "The first time you use a Large item each fight, Haste adjacent items for 12.0 seconds."
           ]
         }
       },
@@ -117445,7 +117445,7 @@
             0
           ],
           "Tooltips": [
-            "If you have exactly one weapon, when you use it, slow an item for 3000 seconds."
+            "If you have exactly one weapon, when you use it, slow an item for 3.0 seconds."
           ]
         },
         "Diamond": {
@@ -117461,7 +117461,7 @@
             0
           ],
           "Tooltips": [
-            "If you have exactly one weapon, when you use it, slow an item for 4000 seconds."
+            "If you have exactly one weapon, when you use it, slow an item for 4.0 seconds."
           ]
         }
       },
@@ -118607,7 +118607,7 @@
             0
           ],
           "Tooltips": [
-            "The first time you Crit each fight, Freeze an item for 4000 seconds."
+            "The first time you Crit each fight, Freeze an item for 4.0 seconds."
           ]
         },
         "Silver": {
@@ -118624,7 +118624,7 @@
             0
           ],
           "Tooltips": [
-            "The first time you Crit each fight, Freeze an item for 6000 seconds."
+            "The first time you Crit each fight, Freeze an item for 6.0 seconds."
           ]
         },
         "Gold": {
@@ -118641,7 +118641,7 @@
             0
           ],
           "Tooltips": [
-            "The first time you Crit each fight, Freeze an item for 8000 seconds."
+            "The first time you Crit each fight, Freeze an item for 8.0 seconds."
           ]
         },
         "Diamond": {
@@ -118658,7 +118658,7 @@
             0
           ],
           "Tooltips": [
-            "The first time you Crit each fight, Freeze an item for 10000 seconds."
+            "The first time you Crit each fight, Freeze an item for 10.0 seconds."
           ]
         }
       },
@@ -118687,7 +118687,7 @@
             0
           ],
           "Tooltips": [
-            "When you use an Aquatic item, Haste a weapon for 1000 seconds."
+            "When you use an Aquatic item, Haste a weapon for 1.0 seconds."
           ]
         },
         "Diamond": {
@@ -118703,7 +118703,7 @@
             0
           ],
           "Tooltips": [
-            "When you use an Aquatic item, Haste a weapon for 2000 seconds."
+            "When you use an Aquatic item, Haste a weapon for 2.0 seconds."
           ]
         }
       },
@@ -119709,7 +119709,7 @@
             0
           ],
           "Tooltips": [
-            "When you Freeze, Haste the Core for 2000 seconds."
+            "When you Freeze, Haste the Core for 2.0 seconds."
           ]
         },
         "Diamond": {
@@ -119725,7 +119725,7 @@
             0
           ],
           "Tooltips": [
-            "When you Freeze, Haste the Core for 4000 seconds."
+            "When you Freeze, Haste the Core for 4.0 seconds."
           ]
         }
       },
@@ -121173,7 +121173,7 @@
             0
           ],
           "Tooltips": [
-            "When you use a Property, haste items adjacent to it 1000 seconds."
+            "When you use a Property, haste items adjacent to it 1.0 seconds."
           ]
         },
         "Diamond": {
@@ -121189,7 +121189,7 @@
             0
           ],
           "Tooltips": [
-            "When you use a Property, haste items adjacent to it 2000 seconds."
+            "When you use a Property, haste items adjacent to it 2.0 seconds."
           ]
         }
       },
@@ -121406,7 +121406,7 @@
             0
           ],
           "Tooltips": [
-            "The first time you Burn each fight, Freeze an item for 3000 seconds."
+            "The first time you Burn each fight, Freeze an item for 3.0 seconds."
           ]
         },
         "Silver": {
@@ -121424,7 +121424,7 @@
             0
           ],
           "Tooltips": [
-            "The first time you Burn each fight, Freeze an item for 4000 seconds."
+            "The first time you Burn each fight, Freeze an item for 4.0 seconds."
           ]
         },
         "Gold": {
@@ -121441,7 +121441,7 @@
             0
           ],
           "Tooltips": [
-            "The first time you Burn each fight, Freeze an item for 5000 seconds."
+            "The first time you Burn each fight, Freeze an item for 5.0 seconds."
           ]
         },
         "Diamond": {
@@ -121458,7 +121458,7 @@
             0
           ],
           "Tooltips": [
-            "The first time you Burn each fight, Freeze an item for 6000 seconds."
+            "The first time you Burn each fight, Freeze an item for 6.0 seconds."
           ]
         }
       },
@@ -122242,7 +122242,7 @@
             0
           ],
           "Tooltips": [
-            "The first time you freeze, burn, slow, poison, and haste each fight, charge an item 2000 seconds."
+            "The first time you freeze, burn, slow, poison, and haste each fight, charge an item 2.0 seconds."
           ]
         },
         "Diamond": {
@@ -122265,7 +122265,7 @@
             0
           ],
           "Tooltips": [
-            "The first time you freeze, burn, slow, poison, and haste each fight, charge an item 4000 seconds."
+            "The first time you freeze, burn, slow, poison, and haste each fight, charge an item 4.0 seconds."
           ]
         }
       },
@@ -122733,7 +122733,7 @@
             0
           ],
           "Tooltips": [
-            "At the start of each fight, Haste a weapon 3000 seconds."
+            "At the start of each fight, Haste a weapon 3.0 seconds."
           ]
         },
         "Silver": {
@@ -122749,7 +122749,7 @@
             0
           ],
           "Tooltips": [
-            "At the start of each fight, Haste a weapon 5000 seconds."
+            "At the start of each fight, Haste a weapon 5.0 seconds."
           ]
         },
         "Gold": {
@@ -122765,7 +122765,7 @@
             0
           ],
           "Tooltips": [
-            "At the start of each fight, Haste a weapon 7000 seconds."
+            "At the start of each fight, Haste a weapon 7.0 seconds."
           ]
         },
         "Diamond": {
@@ -122781,7 +122781,7 @@
             0
           ],
           "Tooltips": [
-            "At the start of each fight, Haste a weapon 9000 seconds."
+            "At the start of each fight, Haste a weapon 9.0 seconds."
           ]
         }
       },
@@ -122961,7 +122961,7 @@
             0
           ],
           "Tooltips": [
-            "When you Slow, Haste a Weapon 1000 seconds."
+            "When you Slow, Haste a Weapon 1.0 seconds."
           ]
         },
         "Diamond": {
@@ -122977,7 +122977,7 @@
             0
           ],
           "Tooltips": [
-            "When you Slow, Haste a Weapon 2000 seconds."
+            "When you Slow, Haste a Weapon 2.0 seconds."
           ]
         }
       },
@@ -123009,7 +123009,7 @@
             0
           ],
           "Tooltips": [
-            "When you use a tool, Slow an item for 1000 seconds."
+            "When you use a tool, Slow an item for 1.0 seconds."
           ]
         },
         "Diamond": {
@@ -123025,7 +123025,7 @@
             0
           ],
           "Tooltips": [
-            "When you use a tool, Slow an item for 2000 seconds."
+            "When you use a tool, Slow an item for 2.0 seconds."
           ]
         }
       },
@@ -123213,7 +123213,7 @@
             0
           ],
           "Tooltips": [
-            "The first time you use a Large item each fight, Slow {ability.0.targets} item for 5000 seconds."
+            "The first time you use a Large item each fight, Slow {ability.0.targets} item for 5.0 seconds."
           ]
         },
         "Silver": {
@@ -123231,7 +123231,7 @@
             1
           ],
           "Tooltips": [
-            "The first time you use a Large item each fight, Slow {ability.0.targets} items for 5000 seconds."
+            "The first time you use a Large item each fight, Slow {ability.0.targets} items for 5.0 seconds."
           ]
         },
         "Gold": {
@@ -123249,7 +123249,7 @@
             1
           ],
           "Tooltips": [
-            "The first time you use a Large item each fight, Slow {ability.0.targets} items for 5000 seconds."
+            "The first time you use a Large item each fight, Slow {ability.0.targets} items for 5.0 seconds."
           ]
         },
         "Diamond": {
@@ -123267,7 +123267,7 @@
             1
           ],
           "Tooltips": [
-            "The first time you use a Large item each fight, Slow {ability.0.targets} items for 5000 seconds."
+            "The first time you use a Large item each fight, Slow {ability.0.targets} items for 5.0 seconds."
           ]
         }
       },
@@ -125248,7 +125248,7 @@
             0
           ],
           "Tooltips": [
-            "The first 10 times you use your rightmost item, freeze an item for 1000 second."
+            "The first 10 times you use your rightmost item, freeze an item for 1.0 second."
           ]
         },
         "Diamond": {
@@ -125268,7 +125268,7 @@
             0
           ],
           "Tooltips": [
-            "The first 10 times you use your rightmost item, freeze an item for 2000 second."
+            "The first 10 times you use your rightmost item, freeze an item for 2.0 second."
           ]
         }
       },
@@ -125491,7 +125491,7 @@
             0
           ],
           "Tooltips": [
-            "The first time you fall below half health each fight, Haste your items 2000 seconds."
+            "The first time you fall below half health each fight, Haste your items 2.0 seconds."
           ]
         },
         "Diamond": {
@@ -125508,7 +125508,7 @@
             0
           ],
           "Tooltips": [
-            "The first time you fall below half health each fight, Haste your items 4000 seconds."
+            "The first time you fall below half health each fight, Haste your items 4.0 seconds."
           ]
         }
       },
@@ -125794,7 +125794,7 @@
             0
           ],
           "Tooltips": [
-            "When you use an ammo item, slow an item for 1000 seconds."
+            "When you use an ammo item, slow an item for 1.0 seconds."
           ]
         },
         "Diamond": {
@@ -125810,7 +125810,7 @@
             0
           ],
           "Tooltips": [
-            "When you use an ammo item, slow an item for 2000 seconds."
+            "When you use an ammo item, slow an item for 2.0 seconds."
           ]
         }
       },
