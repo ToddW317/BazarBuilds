@@ -6,6 +6,7 @@ import CardDisplay from '@/components/CardDisplay'
 import CardFilters from '@/components/CardFilters'
 import { Item } from '@/types/encounters'
 import { ChevronDown } from 'lucide-react'
+import EnchantmentsDisplay from '@/components/EnchantmentsDisplay'
 
 export default function CardsPage() {
   const [itemsPerPage, setItemsPerPage] = useState(25)
@@ -84,8 +85,17 @@ export default function CardsPage() {
   const itemsPerPageOptions = [25, 50, 100]
 
   return (
-    <main className="min-h-screen bg-gray-900 py-8">
-      <div className="max-w-[2000px] mx-auto px-4">
+    <div className="min-h-screen bg-gray-900 py-12">
+      <div className="mx-auto px-4 sm:px-6 lg:px-8" style={{ maxWidth: "1920px" }}>
+        <div className="text-center mb-12">
+          <h1 className="text-4xl font-bold text-white mb-4">Cards</h1>
+          <p className="text-gray-400 max-w-2xl mx-auto">
+            Browse all available cards in The Bazaar. Each card provides unique advantages and can be crucial to your strategy.
+          </p>
+        </div>
+
+        <EnchantmentsDisplay />
+
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-white mb-4">Cards</h1>
           <div className="flex justify-between items-center mb-4">
@@ -135,7 +145,7 @@ export default function CardsPage() {
         </div>
         
         {/* Updated grid layout with max 5 columns */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-6">
           {paginatedItems.map((item) => (
             <CardDisplay 
               key={item.id}
@@ -188,6 +198,6 @@ export default function CardsPage() {
           </div>
         )}
       </div>
-    </main>
+    </div>
   )
 }

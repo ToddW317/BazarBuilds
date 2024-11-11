@@ -27,6 +27,8 @@ import { parseCardTooltip } from '@/utils/cardTooltipFormatter';
 import { formatCardValue } from '@/utils/formatters';
 import { getItemImagePath } from '@/utils/imageUtils';
 import PlaceholderImage from '@/components/PlaceholderImage';
+import EnchantmentBadge from './EnchantmentBadge';
+import React from 'react';
 
 interface CardDisplayProps {
   item: Item;
@@ -205,6 +207,15 @@ export default function CardDisplay({ item, itemId }: CardDisplayProps) {
                 {item.Heroes[0]}
               </span>
             )}
+
+            {/* Enchantment Badges */}
+            {item.Enchantments && Object.entries(item.Enchantments).map(([enchantName, enchantData]) => (
+              <EnchantmentBadge 
+                key={enchantName} 
+                enchantmentName={enchantName}
+                className="ml-0.5" 
+              />
+            ))}
           </div>
 
           {/* Description/Tooltips Section with Scrolling */}
@@ -220,6 +231,27 @@ export default function CardDisplay({ item, itemId }: CardDisplayProps) {
               ))}
             </div>
           </div>
+
+          {/* Enchantments Section */}
+          {item.Enchantments && item.Enchantments.length > 0 && (
+            <div className="border-t border-gray-600/50 pt-3 mt-3">
+              <h3 className="text-sm font-semibold text-purple-400 mb-2 flex items-center gap-2">
+                <Sparkles className="w-4 h-4" />
+                Enchantments
+              </h3>
+              <div className="space-y-1.5">
+                {item.Enchantments.map((enchant, index) => (
+                  <div 
+                    key={index}
+                    className="text-sm text-gray-300 flex items-center gap-2 bg-purple-500/10 rounded px-2 py-1"
+                  >
+                    <div className="w-1.5 h-1.5 rounded-full bg-purple-400" />
+                    {enchant}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Attributes Grid */}
           {currentTierData.Attributes && Object.keys(currentTierData.Attributes).length > 0 && (
