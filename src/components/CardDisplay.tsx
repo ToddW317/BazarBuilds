@@ -21,7 +21,15 @@ import {
   Droplet,
   Timer,
   BadgeAlert,
-  Coins
+  Coins,
+  Wrench,
+  Package,
+  Ban,
+  Tags,
+  Gem,
+  Car,
+  Beaker,
+  Home,
 } from 'lucide-react';
 import { parseCardTooltip } from '@/utils/cardTooltipFormatter';
 import { formatCardValue } from '@/utils/formatters';
@@ -29,11 +37,146 @@ import { getItemImagePath } from '@/utils/imageUtils';
 import PlaceholderImage from '@/components/PlaceholderImage';
 import EnchantmentBadge from './EnchantmentBadge';
 import React from 'react';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { ENCHANTMENTS } from './EnchantmentsDisplay';
+import type { EnchantmentType } from './EnchantmentsDisplay';
 
 interface CardDisplayProps {
   item: Item;
   itemId: string;
 }
+
+type EnchantmentTooltipProps = {
+  enchantName: string;
+  enchantData: EnchantmentType;
+};
+
+interface TierData {
+  Attributes?: Record<string, any>;
+  Tooltips?: string[];
+  [key: string]: any;
+}
+
+type ItemTag = {
+  type: string;
+  icon: React.ComponentType<any>;
+  color: string;
+  bgColor: string;
+  borderColor: string;
+};
+
+const getItemTags = (item: Item): ItemTag[] => {
+  const tags: ItemTag[] = [];
+  
+  // Add tags from the item's Tags array
+  if (item.Tags && Array.isArray(item.Tags)) {
+    item.Tags.forEach(tag => {
+      switch(tag) {
+        case 'Friend':
+          tags.push({
+            type: "Friend",
+            icon: Crown,
+            color: "#f472b6", // pink-400
+            bgColor: "rgba(244, 114, 182, 0.1)",
+            borderColor: "rgba(244, 114, 182, 0.2)"
+          });
+          break;
+        case 'Tool':
+          tags.push({
+            type: "Tool",
+            icon: Wrench,
+            color: "#60a5fa", // blue-400
+            bgColor: "rgba(96, 165, 250, 0.1)",
+            borderColor: "rgba(96, 165, 250, 0.2)"
+          });
+          break;
+        case 'Core':
+          tags.push({
+            type: "Core",
+            icon: Gem,
+            color: "#c084fc", // purple-400
+            bgColor: "rgba(192, 132, 252, 0.1)",
+            borderColor: "rgba(192, 132, 252, 0.2)"
+          });
+          break;
+        case 'Weapon':
+          tags.push({
+            type: "Weapon",
+            icon: Swords,
+            color: "#ef4444", // red-500
+            bgColor: "rgba(239, 68, 68, 0.1)",
+            borderColor: "rgba(239, 68, 68, 0.2)"
+          });
+          break;
+        case 'Aquatic':
+          tags.push({
+            type: "Aquatic",
+            icon: Droplet,
+            color: "#38bdf8", // sky-400
+            bgColor: "rgba(56, 189, 248, 0.1)",
+            borderColor: "rgba(56, 189, 248, 0.2)"
+          });
+          break;
+        case 'Vehicle':
+          tags.push({
+            type: "Vehicle",
+            icon: Car,
+            color: "#a78bfa", // violet-400
+            bgColor: "rgba(167, 139, 250, 0.1)",
+            borderColor: "rgba(167, 139, 250, 0.2)"
+          });
+          break;
+        case 'Potion':
+          tags.push({
+            type: "Potion",
+            icon: Beaker,
+            color: "#4ade80", // green-400
+            bgColor: "rgba(74, 222, 128, 0.1)",
+            borderColor: "rgba(74, 222, 128, 0.2)"
+          });
+          break;
+        case 'Property':
+          tags.push({
+            type: "Property",
+            icon: Home,
+            color: "#fbbf24", // amber-400
+            bgColor: "rgba(251, 191, 36, 0.1)",
+            borderColor: "rgba(251, 191, 36, 0.2)"
+          });
+          break;
+      }
+    });
+  }
+  
+  // Add special attribute-based tags
+  if (item.Tiers?.[item.StartingTier || 'Bronze']?.sellPrice === 0) {
+    tags.push({
+      type: "Unsellable",
+      icon: Ban,
+      color: "#ef4444", // red-500
+      bgColor: "rgba(239, 68, 68, 0.1)",
+      borderColor: "rgba(239, 68, 68, 0.2)"
+    });
+  }
+
+  // If no tags, add default Item tag
+  if (tags.length === 0) {
+    tags.push({
+      type: "Item",
+      icon: Package,
+      color: "#4ade80", // green-400
+      bgColor: "rgba(74, 222, 128, 0.1)",
+      borderColor: "rgba(74, 222, 128, 0.2)"
+    });
+  }
+
+  return tags;
+};
 
 export default function CardDisplay({ item, itemId }: CardDisplayProps) {
   const [selectedTier, setSelectedTier] = useState<string>(item.StartingTier || 'Bronze');
@@ -68,8 +211,8 @@ export default function CardDisplay({ item, itemId }: CardDisplayProps) {
     }
   }
 
-  const renderTooltip = (tooltip: string, attributes: Record<string, any>) => {
-    const segments = parseCardTooltip(tooltip, attributes)
+  const renderTooltip = (tooltip: string, attributes: Record<string, any> | undefined) => {
+    const segments = parseCardTooltip(tooltip, attributes || {})
 
     return (
       <div className="flex flex-wrap items-start gap-x-1.5 gap-y-1 text-base leading-relaxed">
@@ -85,15 +228,12 @@ export default function CardDisplay({ item, itemId }: CardDisplayProps) {
     )
   }
 
-  const getAllTooltips = (tierData: any) => {
+  const getAllTooltips = (tierData: TierData) => {
     const tooltips: string[] = [];
     
     // Main tooltips
     if (Array.isArray(tierData.Tooltips)) {
-      const validTooltips = tierData.Tooltips
-        .filter((t: unknown): t is string => typeof t === 'string')
-        .filter((t: string) => t.trim() !== '');
-      tooltips.push(...validTooltips);
+      tooltips.push(...tierData.Tooltips.filter(t => typeof t === 'string' && t.trim() !== ''));
     }
     
     // Additional tooltip arrays
@@ -101,10 +241,7 @@ export default function CardDisplay({ item, itemId }: CardDisplayProps) {
       if (key.toLowerCase().includes('tooltip') && 
           key !== 'Tooltips' && 
           Array.isArray(value)) {
-        const validTooltips = (value as unknown[])
-          .filter((t: unknown): t is string => typeof t === 'string')
-          .filter((t: string) => t.trim() !== '');
-        tooltips.push(...validTooltips);
+        tooltips.push(...value.filter(t => typeof t === 'string' && t.trim() !== ''));
       }
     });
 
@@ -208,14 +345,122 @@ export default function CardDisplay({ item, itemId }: CardDisplayProps) {
               </span>
             )}
 
-            {/* Enchantment Badges */}
-            {item.Enchantments && Object.entries(item.Enchantments).map(([enchantName, enchantData]) => (
-              <EnchantmentBadge 
-                key={enchantName} 
-                enchantmentName={enchantName}
-                className="ml-0.5" 
-              />
-            ))}
+            {/* Item Type Tags */}
+            {(() => {
+              const itemTags = getItemTags(item);
+              if (itemTags.length <= 1) {
+                // If only one tag, show it directly
+                const tag = itemTags[0];
+                return (
+                  <span 
+                    className="px-3 py-1 rounded flex items-center gap-1.5 text-sm font-medium"
+                    style={{ 
+                      backgroundColor: tag.bgColor,
+                      color: tag.color
+                    }}
+                  >
+                    <tag.icon className="w-4 h-4" />
+                    {tag.type}
+                  </span>
+                );
+              }
+              
+              // If multiple tags, show them in a dropdown
+              return (
+                <TooltipProvider delayDuration={0}>
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <div className="px-3 py-1 bg-gray-500/20 rounded flex items-center gap-1.5 text-sm text-gray-300 hover:bg-gray-500/30 transition-colors">
+                        <Tags className="w-4 h-4" />
+                        {itemTags.length} Tags
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent 
+                      side="bottom" 
+                      className="bg-gray-800/95 border border-gray-700 p-2"
+                    >
+                      <div className="flex flex-col gap-2">
+                        {itemTags.map((tag) => (
+                          <div 
+                            key={tag.type}
+                            className="flex items-center gap-2 p-2 rounded border"
+                            style={{
+                              backgroundColor: tag.bgColor,
+                              borderColor: tag.borderColor
+                            }}
+                          >
+                            <tag.icon 
+                              style={{ color: tag.color }} 
+                              className="w-4 h-4 flex-shrink-0" 
+                            />
+                            <span 
+                              style={{ color: tag.color }} 
+                              className="font-medium"
+                            >
+                              {tag.type}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              );
+            })()}
+
+            {/* Enchantments Dropdown */}
+            {item.Enchantments && typeof item.Enchantments === 'object' && Object.keys(item.Enchantments).length > 0 && (
+              <TooltipProvider delayDuration={0}>
+                <Tooltip>
+                  <TooltipTrigger>
+                    <div className="px-3 py-1 bg-purple-500/20 rounded flex items-center gap-1.5 text-sm text-purple-300 hover:bg-purple-500/30 transition-colors">
+                      <Sparkles className="w-4 h-4" />
+                      {Object.keys(item.Enchantments).length} Enchant{Object.keys(item.Enchantments).length !== 1 ? 's' : ''}
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent 
+                    side="bottom" 
+                    className="bg-gray-800/95 border border-gray-700 p-2 w-[500px]"
+                  >
+                    <div className="grid grid-cols-2 gap-2">
+                      {Object.entries(item.Enchantments).map(([enchantName]) => {
+                        const enchantData = ENCHANTMENTS[enchantName];
+                        if (!enchantData) return null;
+                        
+                        return (
+                          <div 
+                            key={enchantName}
+                            className="flex items-start gap-2 p-2 rounded border"
+                            style={{
+                              backgroundColor: enchantData.bgColor,
+                              borderColor: enchantData.borderColor
+                            }}
+                          >
+                            <enchantData.Icon 
+                              style={{ color: enchantData.color }} 
+                              className="w-4 h-4 flex-shrink-0 mt-0.5" 
+                            />
+                            <div className="flex-1">
+                              <span 
+                                style={{ color: enchantData.color }} 
+                                className="font-medium block text-sm"
+                              >
+                                {enchantData.Name}
+                              </span>
+                              {enchantData.Tooltips.map((tooltip: string, i: number) => (
+                                <span key={i} className="text-xs text-gray-300 block">
+                                  {tooltip}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
           </div>
 
           {/* Description/Tooltips Section with Scrolling */}
@@ -231,27 +476,6 @@ export default function CardDisplay({ item, itemId }: CardDisplayProps) {
               ))}
             </div>
           </div>
-
-          {/* Enchantments Section */}
-          {item.Enchantments && item.Enchantments.length > 0 && (
-            <div className="border-t border-gray-600/50 pt-3 mt-3">
-              <h3 className="text-sm font-semibold text-purple-400 mb-2 flex items-center gap-2">
-                <Sparkles className="w-4 h-4" />
-                Enchantments
-              </h3>
-              <div className="space-y-1.5">
-                {item.Enchantments.map((enchant, index) => (
-                  <div 
-                    key={index}
-                    className="text-sm text-gray-300 flex items-center gap-2 bg-purple-500/10 rounded px-2 py-1"
-                  >
-                    <div className="w-1.5 h-1.5 rounded-full bg-purple-400" />
-                    {enchant}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
 
           {/* Attributes Grid */}
           {currentTierData.Attributes && Object.keys(currentTierData.Attributes).length > 0 && (
