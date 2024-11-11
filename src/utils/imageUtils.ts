@@ -1,95 +1,104 @@
-import { Item } from '@/types/encounters';
+import itemToImageMapping from '../data/itemToImageMapping';
 
-// Helper function to normalize strings for comparison
-function normalizeString(str: string): string {
-  return str.toLowerCase()
-    .replace(/[^a-z0-9]/g, '') // Remove special characters and spaces
-    .trim();
-}
+type Hero = string;
 
-// Helper function to find the closest matching image filename
-function findClosestImageMatch(itemName: string, availableImages: string[]): string | null {
-  const normalizedItemName = normalizeString(itemName);
-  
-  // First try exact match
-  const exactMatch = availableImages.find(img => 
-    normalizeString(img).includes(normalizedItemName)
-  );
-  if (exactMatch) return exactMatch;
-
-  // Try partial matches
-  const words = normalizedItemName.split(/\s+/);
-  const partialMatch = availableImages.find(img => {
-    const normalizedImg = normalizeString(img);
-    return words.some(word => normalizedImg.includes(word));
-  });
-  
-  return partialMatch || null;
-}
-
-const imageCache: Record<string, string> = {};
-
-const itemImageMappings: Record<string, string> = {
-  // Your existing mappings
-  'Fang': 'CF_S_ADV_Fangs_D',
-  'Basilisk Fang': 'CF_S_ADV_Fangs_D',
-  'Fangs': 'CF_S_ADV_Fangs_D',
-  'Small Weaponry': 'CF_S_ADV_SmallWeaponry_D',
-  // ... other mappings ...
+const characterCodeMapping: Record<string, string> = {
+  "Common": "COM",
+  "Dooley": "DOO",
+  "Stelle": "STE", 
+  "Pygmalien": "PYG",
+  "Mak": "MAK",
+  "Jules": "JUL",
+  "Vanessa": "VAN",
+  "Adventurer": "ADV",
+  "Neutral": "NEU",
+  "Blacksmith": "BLK",
+  "Nature": "NTR",
+  "Steel": "STL",
+  "Yellow": "YLW"
 };
 
-export function getItemImageUrl(item: any): string {
-  if (!item?.ArtKey) return '/items/default-item.png';
+interface Item {
+  InternalName: string;
+  Size?: string;
+  Heroes?: string[];
+}
+
+function getCharacterCode(heroes: Hero[]): string {
+  if (!heroes || heroes.length === 0) return 'COM';
+  const hero = heroes[0];
+  return characterCodeMapping[hero] || 'UNK';
+}
+
+function getSizeCode(size: string): string {
+  if (!size) return 'M';
+  return size[0].toUpperCase();
+}
+
+function formatItemName(name: string): string {
+  if (!name) return '';
   
-  // Try JPEG first
-  const jpegPath = `/items/${item.ArtKey}.jpeg`;
-  
-  // Fallback paths
-  const pngPath = `/items/${item.ArtKey}.png`;
-  const webpPath = `/items/${item.ArtKey}.webp`;
-  
-  // Return the JPEG path by default
-  return jpegPath;
+  return name
+    .replace(/[\[\]()]/g, '') // Remove brackets and parentheses
+    .replace(/[^a-zA-Z0-9\s-]/g, '') // Remove special chars except spaces and hyphens
+    .replace(/\s+/g, '_') // Replace spaces with underscores
+    .replace(/-/g, '_') // Replace hyphens with underscores
+    .replace(/_+/g, '_') // Replace multiple underscores with single
+    .trim(); // Remove leading/trailing spaces
 }
 
 export function getItemImagePath(item: Item): string {
-  if (!item) {
-    console.error('Item is undefined in getItemImagePath');
-    return '/items/default-item.png';
+  try {
+    // First try to get the image path from the mapping
+    const mappedPath = itemToImageMapping[item.InternalName];
+    if (mappedPath) {
+      return mappedPath;
+    }
+
+    // If no mapping exists, generate the path
+    const sizeCode = getSizeCode(item.Size || '');
+    const characterCode = getCharacterCode(item.Heroes || []);
+    const formattedName = formatItemName(item.InternalName);
+    
+    // Log problematic items in development
+    if (process.env.NODE_ENV === 'development') {
+      if (!item.Size || !item.Heroes || !item.InternalName) {
+        console.warn('Missing required item properties:', {
+          itemName: item.InternalName,
+          size: item.Size,
+          heroes: item.Heroes
+        });
+      }
+      
+      // Log when falling back to generated path
+      console.debug(`No mapping found for ${item.InternalName}, using generated path`);
+    }
+    
+    const generatedPath = `/items/CF_${sizeCode}_${characterCode}_${formattedName}_D.jpeg`;
+
+    // Log the attempted paths in development
+    if (process.env.NODE_ENV === 'development') {
+      console.debug('Image path resolution:', {
+        itemName: item.InternalName,
+        mappedPath,
+        generatedPath,
+        usingGenerated: !mappedPath
+      });
+    }
+
+    return generatedPath;
+  } catch (error) {
+    console.error('Error generating image path for item:', item.InternalName, error);
+    return '/items/default-item.gif';
   }
-
-  // Get the size abbreviation ('S', 'M', 'L')
-  const size: string = item.Size || 'Unknown';
-  const sizeAbbreviation: string = size.charAt(0).toUpperCase();
-
-  const heroAbbreviationMap: { [key: string]: string } = {
-    'Common': 'COM',
-    'Pygmalien': 'PYG',
-    'Jules': 'JUL',
-    'Dooley': 'DOO',
-    'Stelle': 'STE',
-    'Vanessa': 'VAN',
-    'Mak': 'MAK',
-    'ADV': 'ADV'
-  };
-
-  // Get the hero abbreviation, default to 'COM' if not found
-  const heroName: string = item.Heroes?.[0] || 'Common';
-  const heroAbbreviation: string = heroAbbreviationMap[heroName] || 'COM';
-
-  // Replace spaces and special characters in item name
-  const itemName: string = item.InternalName 
-    ? item.InternalName.replace(/\s+/g, '_').replace(/[^\w]/g, '')
-    : 'Unknown';
-
-  // Construct the image filename
-  const imageName: string = `CF_${sizeAbbreviation}_${heroAbbreviation}_${itemName}_D.jpeg`;
-
-  // Return the path with leading slash for Next.js
-  return `/items/${imageName}`;
 }
 
-// Usage example:
-// const defaultImage = getItemImagePath("CF_S_JUL_Caviar_D.jpeg"); // Returns "/items/CF_S_JUL_Caviar_D.jpeg"
-// const maskImage = getItemImagePath("CF_S_JUL_Caviar_D.jpeg", "Mask"); // Returns "/items/CF_S_JUL_Caviar_Mask.jpeg"
-// const fxImage = getItemImagePath("CF_S_JUL_Caviar_D.jpeg", "FX"); // Returns "/items/CF_S_JUL_Caviar_FX.jpeg"
+// Helper function to check if an image exists
+export async function checkImageExists(imagePath: string): Promise<boolean> {
+  try {
+    const response = await fetch(imagePath, { method: 'HEAD' });
+    return response.ok;
+  } catch {
+    return false;
+  }
+}

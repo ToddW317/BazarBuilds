@@ -37,8 +37,7 @@ import {
 } from "@/components/ui/tooltip";
 
 interface CardDetailsContentProps {
-  item: Item;
-  itemId: string;
+  card: Item;
 }
 
 interface EncounterInfo {
@@ -188,15 +187,15 @@ const getItemTags = (item: Item): ItemTag[] => {
   return tags;
 };
 
-export default function CardDetailsContent({ item, itemId }: CardDetailsContentProps) {
+export default function CardDetailsContent({ card }: CardDetailsContentProps) {
   console.log('encounterData:', encounterData);
-  console.log('itemId:', itemId);
+  console.log('itemId:', card.InternalName);
   
   const router = useRouter();
-  const encounters = getEncounterInfo(itemId);
+  const encounters = getEncounterInfo(card.InternalName);
   console.log('Found encounters:', encounters);
 
-  const [selectedTier, setSelectedTier] = useState<string>(item?.StartingTier || 'Bronze');
+  const [selectedTier, setSelectedTier] = useState<string>(card?.StartingTier || 'Bronze');
   const [imageError, setImageError] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -204,7 +203,7 @@ export default function CardDetailsContent({ item, itemId }: CardDetailsContentP
     router.push(`/encounters?search=${encodeURIComponent(monsterName)}&expanded=true`);
   };
 
-  if (!item) {
+  if (!card) {
     console.log('Item is null or undefined');
     return (
       <div className="flex items-center justify-center min-h-[400px] bg-gray-800 rounded-lg">
@@ -213,7 +212,7 @@ export default function CardDetailsContent({ item, itemId }: CardDetailsContentP
     );
   }
 
-  const currentTierData = item.Tiers?.[selectedTier] || {};
+  const currentTierData = card.Tiers?.[selectedTier] || {};
   console.log('Current tier data:', currentTierData);
 
   const getTierColor = (tier: string) => {
@@ -316,13 +315,6 @@ export default function CardDetailsContent({ item, itemId }: CardDetailsContentP
 
   return (
     <div className="space-y-4">
-      {/* Single Header Section */}
-      <div className="flex flex-col space-y-4">
-        <Link href="/cards" className="text-blue-400 hover:text-blue-300">
-          ← Back to Cards
-        </Link>
-      </div>
-
       {/* Main Content Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 max-w-5xl mx-auto">
         {/* Left Column - Image and Enchantments */}
@@ -332,7 +324,7 @@ export default function CardDetailsContent({ item, itemId }: CardDetailsContentP
           transition={{ duration: 0.5, ease: "easeOut" }}
           className="relative w-full max-w-[400px] mx-auto space-y-4"
         >
-          <h1 className="text-2xl font-bold text-white mb-4">{item.InternalName}</h1>
+          <h1 className="text-2xl font-bold text-white mb-4">{card.InternalName}</h1>
           <motion.div 
             className="relative aspect-[4/3] bg-gray-700 rounded-lg overflow-hidden shadow-xl hover:shadow-2xl transition-shadow duration-300"
             whileHover={{ 
@@ -346,8 +338,8 @@ export default function CardDetailsContent({ item, itemId }: CardDetailsContentP
             }}
           >
             <Image
-              src={getItemImagePath(item)}
-              alt={item.InternalName}
+              src={getItemImagePath(card)}
+              alt={card.InternalName}
               fill
               className={`object-cover ${isLoading ? 'opacity-0' : 'opacity-100'} transition-opacity duration-300`}
               onError={() => setImageError(true)}
@@ -362,14 +354,14 @@ export default function CardDetailsContent({ item, itemId }: CardDetailsContentP
           </motion.div>
 
           {/* Enchantments Section */}
-          {item.Enchantments && typeof item.Enchantments === 'object' && Object.keys(item.Enchantments).length > 0 && (
+          {card.Enchantments && typeof card.Enchantments === 'object' && Object.keys(card.Enchantments).length > 0 && (
             <div className="bg-gray-800/50 rounded-lg p-4">
               <div className="flex items-center gap-2 mb-3">
                 <Sparkles className="w-5 h-5 text-purple-400" />
                 <h2 className="text-xl font-bold text-white">Enchantments</h2>
               </div>
               <div className="grid grid-cols-2 gap-2">
-                {Object.entries(item.Enchantments).map(([enchantName]) => {
+                {Object.entries(card.Enchantments).map(([enchantName]) => {
                   const enchantData = ENCHANTMENTS[enchantName];
                   if (!enchantData) return null;
                   
@@ -411,7 +403,7 @@ export default function CardDetailsContent({ item, itemId }: CardDetailsContentP
         <div className="space-y-4">
           {/* Tier Selection */}
           <div className="flex space-x-2">
-            {Object.keys(item.Tiers).map((tier) => (
+            {Object.keys(card.Tiers).map((tier) => (
               <button
                 key={tier}
                 onClick={() => setSelectedTier(tier)}
@@ -433,19 +425,19 @@ export default function CardDetailsContent({ item, itemId }: CardDetailsContentP
               {/* Size Tag */}
               <span className="px-3 py-1 bg-indigo-500/20 rounded flex items-center gap-1.5 text-sm text-indigo-300 font-medium">
                 <Maximize2 className="w-4 h-4" />
-                {item.Size}
+                {card.Size}
               </span>
 
               {/* Hero Tag */}
-              {item.Heroes.length > 0 && (
+              {card.Heroes.length > 0 && (
                 <span className="px-3 py-1 bg-purple-500/20 rounded flex items-center gap-1.5 text-sm text-purple-300">
                   <Crown className="w-4 h-4" />
-                  {item.Heroes[0]}
+                  {card.Heroes[0]}
                 </span>
               )}
 
               {/* Item Tags */}
-              {getItemTags(item).map((tag) => (
+              {getItemTags(card).map((tag) => (
                 <span 
                   key={tag.type}
                   className="px-3 py-1 rounded flex items-center gap-1.5 text-sm font-medium"

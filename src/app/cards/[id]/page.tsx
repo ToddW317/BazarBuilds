@@ -1,37 +1,35 @@
-import { Metadata } from 'next'
-import { notFound } from 'next/navigation'
-import encounterData from '@/data/out.json'
-import { Item } from '@/types/encounters'
-import CardDetailsContent from '@/components/CardDetailsContent'
+'use client';
 
-interface Props {
-  params: { id: string }
-}
+import { useEffect } from 'react';
+import { cards } from '@/data/cards';
+import CardDetailsContent from '@/components/CardDetailsContent';
+import BackToCardsButton from '@/components/BackToCardsButton';
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const items = encounterData.items as unknown as Record<string, Item>
-  const item = items[params.id]
+export default function CardDetailsPage({ params }: { params: { id: string } }) {
+  const card = cards.find(c => c.id === params.id);
 
-  if (!item) {
-    return {
-      title: 'Card Not Found | BazaarBuilds',
-      description: 'The requested card could not be found.'
-    }
+  // Reset scroll position when component mounts
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
+  if (!card) {
+    return (
+      <div className="min-h-screen bg-gray-900 py-12">
+        <div className="max-w-7xl mx-auto px-4">
+          <BackToCardsButton />
+          <div className="text-white">Card not found</div>
+        </div>
+      </div>
+    );
   }
 
-  return {
-    title: `${item.InternalName} | BazaarBuilds`,
-    description: `Details for ${item.InternalName} card in The Bazaar.`
-  }
-}
-
-export default async function CardPage({ params }: Props) {
-  const items = encounterData.items as unknown as Record<string, Item>
-  const item = items[params.id]
-
-  if (!item) {
-    notFound()
-  }
-
-  return <CardDetailsContent item={item} itemId={params.id} />
+  return (
+    <div className="min-h-screen bg-gray-900 py-12">
+      <div className="max-w-7xl mx-auto px-4">
+        <BackToCardsButton />
+        <CardDetailsContent card={card} />
+      </div>
+    </div>
+  );
 } 

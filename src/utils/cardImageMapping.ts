@@ -3,7 +3,7 @@ import { Item } from '@/types/encounters';
 export function getCardImageUrl(item: Item): string {
   if (!item?.InternalName) {
     console.log('No InternalName found:', item);
-    return '/items/default-item.png';
+    return '/items/default-item.gif';
   }
 
   // Get size (S, M, L)

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Item } from '@/types/encounters';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -182,7 +182,14 @@ export default function CardDisplay({ item, itemId }: CardDisplayProps) {
   const [selectedTier, setSelectedTier] = useState<string>(item.StartingTier || 'Bronze');
   const [imageError, setImageError] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [imageSrc, setImageSrc] = useState(getItemImagePath(item));
+  const [imageSrc, setImageSrc] = useState<string>(() => getItemImagePath(item));
+
+  useEffect(() => {
+    // Update image source when item changes
+    setImageSrc(getItemImagePath(item));
+    setImageError(false);
+    setIsLoading(true);
+  }, [item]);
 
   const currentTierData = item.Tiers[selectedTier] || {};
 
@@ -258,6 +265,7 @@ export default function CardDisplay({ item, itemId }: CardDisplayProps) {
       Heroes: "${item.Heroes}"`
     );
     setImageError(true);
+    setImageSrc('/items/default-item.gif');
   };
 
   return (
@@ -267,7 +275,16 @@ export default function CardDisplay({ item, itemId }: CardDisplayProps) {
         {/* Header with Image */}
         <div className="relative">
           <div className="relative aspect-[16/12] w-full bg-gray-700">
-            {!imageError ? (
+            {imageError ? (
+              <Image
+                src="/items/default-item.gif"
+                alt="Default card image"
+                fill
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                className="object-cover"
+                priority={true}
+              />
+            ) : (
               <Image
                 src={imageSrc}
                 alt={item.InternalName}
@@ -276,15 +293,6 @@ export default function CardDisplay({ item, itemId }: CardDisplayProps) {
                 className="object-cover"
                 onError={handleImageError}
                 onLoad={() => setIsLoading(false)}
-                priority={true}
-              />
-            ) : (
-              <Image
-                src="/items/default-item.png"
-                alt="Default card image"
-                fill
-                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                className="object-cover"
                 priority={true}
               />
             )}

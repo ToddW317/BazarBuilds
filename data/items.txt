@@ -880,4 +880,4 @@
   'CF_S_VAN_YetiCrab_D.jpeg',
   'CF_S_VAN_Zoarcid_D.jpeg',
   'CF_S_YLW-M4NT1S_D.jpeg',
-  'default-item.png',
+  'default-item.gif',
