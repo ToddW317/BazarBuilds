@@ -11,8 +11,9 @@ import { CompareSidebar } from '@/components/CompareSidebar'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'The Bazaar Builds',
-  description: 'Share and discover the best builds for The Bazaar',
+  other: {
+    'admaven-placement': 'Bqdr4rdgE',
+  },
 }
 
 export default function RootLayout({
@@ -23,6 +24,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
+        <meta name="admaven-placement" content="Bqdr4rdgE" />
         <script
           async
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=YOUR-CLIENT-ID"
