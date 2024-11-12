@@ -6,12 +6,12 @@ import { AuthProvider } from '@/contexts/AuthContext'
 import Footer from '@/components/Footer'
 import GoogleAd from '@/components/GoogleAd'
 import { CompareSidebar } from '@/components/CompareSidebar'
-
+import { Toaster } from 'react-hot-toast'
 
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  // Removed admaven metadata
+  // Your metadata
 }
 
 export default function RootLayout({
@@ -32,6 +32,7 @@ export default function RootLayout({
             </main>
             <Footer />
             <CompareSidebar />
+            <Toaster position="top-right" />
           </AuthProvider>
       </body>
     </html>

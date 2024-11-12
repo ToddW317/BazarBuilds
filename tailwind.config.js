@@ -15,11 +15,16 @@ module.exports = {
         'fade-in': {
           '0%': { opacity: '0', transform: 'translateY(10px)' },
           '100%': { opacity: '1', transform: 'translateY(0)' }
+        },
+        spinReel: {
+          '0%': { transform: 'translateX(0)' },
+          '100%': { transform: 'translateX(-33.333%)' }
         }
       },
       animation: {
         'border-orbit': 'border-orbit 3s linear infinite',
-        'fade-in': 'fade-in 0.5s ease-out forwards'
+        'fade-in': 'fade-in 0.5s ease-out forwards',
+        spinReel: 'spinReel 3s linear infinite'
       }
     }
   },

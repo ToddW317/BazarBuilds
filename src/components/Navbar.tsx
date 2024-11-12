@@ -8,6 +8,7 @@ import { Menu, X } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { signInWithPopup, GoogleAuthProvider } from 'firebase/auth'
 import { auth } from '@/lib/firebase'
+import { Squares2X2Icon } from '@heroicons/react/24/outline'
 
 export default function Navbar() {
   const { user, signOut } = useAuth()
@@ -32,6 +33,7 @@ export default function Navbar() {
     { path: '/cards', label: 'Cards' },
     { path: '/skills', label: 'Skills' },
     { path: '/encounters', label: 'Encounters' },
+    { path: '/builds-roulette', label: 'Builds Roulette' },
   ]
 
   return (
