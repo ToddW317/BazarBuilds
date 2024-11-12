@@ -124,7 +124,7 @@ export default function BuildsPage() {
         <div className="flex flex-col md:flex-row justify-between items-center mb-8">
           <div>
             <h1 className="text-3xl font-bold text-white mb-2">Community Builds</h1>
-            <p className="text-gray-400">Discover and share the best builds for The Bazaar</p>
+            <p className="text-gray-400">Discover and Test the best builds for The Bazaar</p>
           </div>
           
           <Link 
