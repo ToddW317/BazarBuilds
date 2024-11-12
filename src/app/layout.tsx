@@ -28,7 +28,6 @@ export default function RootLayout({
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=YOUR-CLIENT-ID"
           crossOrigin="anonymous"
         />
-        <meta name='admaven-placement' content=Bqdr4rdgE>
       </head>
       <body className={`${inter.className} flex flex-col min-h-screen`}>
           <AuthProvider>
