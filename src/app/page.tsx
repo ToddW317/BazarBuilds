@@ -93,7 +93,7 @@ export default function HomePage() {
             <div className="bg-gray-800 rounded-lg p-8 text-center border border-gray-700">
               <div className="text-5xl mb-4 text-blue-400">📸</div>
               <h3 className="text-xl font-semibold mb-2 text-white">Share Screenshots</h3>
-              <p className="text-gray-400">Showcase your epic victories and perfect builds with up to 5 high-quality screenshots</p>
+              <p className="text-gray-400">Showcases your epic victories and perfect builds with up to 5 high-quality screenshots</p>
             </div>
 
             <div className="bg-gray-800 rounded-lg p-8 text-center border border-gray-700">
