@@ -24,11 +24,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        <meta name="admaven-placement" content="Bqdr4rdgE" />
-        <script
-          async
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=YOUR-CLIENT-ID"
-          crossOrigin="anonymous"
+        <script 
+          data-cfasync="false" 
+          src="//dcbbwymp1bhlf.cloudfront.net/?wbbcd=1118629"
         />
       </head>
       <body className={`${inter.className} flex flex-col min-h-screen`}>
