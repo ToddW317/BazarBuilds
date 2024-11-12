@@ -57,26 +57,42 @@ type ItemTag = {
 const getEncounterInfo = (itemId: string): EncounterInfo[] => {
   const encounters: EncounterInfo[] = [];
   
+  console.log('Getting encounter info for itemId:', itemId);
+  
   if (!encounterData?.monsters) {
     console.warn('No monsters data available');
     return encounters;
   }
   
   try {
-    Object.entries(encounterData.monsters).forEach(([monsterName, monster]) => {
-      if (monster?.Items) {
-        const matchingItem = monster.Items.find(item => item.ItemID === itemId);
-        if (matchingItem) {
+    // Look through all monsters
+    Object.entries(encounterData.monsters).forEach(([monsterName, monster]: [string, any]) => {
+      // Check if the monster has Items array
+      if (monster?.Items && Array.isArray(monster.Items)) {
+        // Look for our item in the monster's Items
+        const hasItem = monster.Items.some((item: any) => 
+          item.Name === itemId || item.ItemID === itemId
+        );
+        
+        if (hasItem) {
+          // Calculate drop rate based on number of items
+          // Each item has an equal chance of dropping
+          const dropRate = 1 / monster.Items.length;
+          
           encounters.push({
             name: monsterName,
-            image: `/encounters/${monsterName.toLowerCase()}.png`,
-            dropRate: 1 / monster.Items.length
+            image: `/encounters/${monsterName.toLowerCase().replace(/\s+/g, '_')}.png`,
+            dropRate: dropRate
           });
         }
       }
     });
+
+    console.log('Found encounters:', encounters);
   } catch (error) {
     console.error('Error processing monster data:', error);
+    console.error('ItemId:', itemId);
+    console.error('Error details:', error);
   }
   
   return encounters;
@@ -343,7 +359,7 @@ export default function CardDetailsContent({ card }: CardDetailsContentProps) {
               fill
               className={`object-cover ${isLoading ? 'opacity-0' : 'opacity-100'} transition-opacity duration-300`}
               onError={() => setImageError(true)}
-              onLoadingComplete={() => setIsLoading(false)}
+              onLoad={() => setIsLoading(false)}
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 500px"
               priority
             />
@@ -478,7 +494,7 @@ export default function CardDetailsContent({ card }: CardDetailsContentProps) {
           <div className="bg-gray-800/50 rounded-lg p-4">
             <h2 className="text-xl font-bold text-white mb-3">Description</h2>
             <div className="space-y-3">
-              {currentTierData.tooltips?.map((tooltip: string, index: number) => (
+              {getAllTooltips(currentTierData).map((tooltip: string, index: number) => (
                 <div 
                   key={index} 
                   className="border-b border-gray-600/50 last:border-0 pb-3 last:pb-0 pt-3 first:pt-0"
@@ -486,29 +502,11 @@ export default function CardDetailsContent({ card }: CardDetailsContentProps) {
                   {renderTooltip(tooltip, currentTierData.Attributes)}
                 </div>
               ))}
-              {/* Additional tooltips from other arrays */}
-              {Object.entries(currentTierData)
-                .filter(([key, value]) => 
-                  key.toLowerCase().includes('tooltip') && 
-                  Array.isArray(value) &&
-                  key !== 'tooltips' &&
-                  key !== 'TooltipIds'
-                )
-                .flatMap(([_, tooltipArray]) => tooltipArray)
-                .map((tooltip: string, index: number) => (
-                  <div 
-                    key={`additional-${index}`} 
-                    className="border-b border-gray-600/50 last:border-0 pb-3 last:pb-0 pt-3 first:pt-0"
-                  >
-                    {renderTooltip(tooltip, currentTierData.Attributes)}
-                  </div>
-                ))
-              }
             </div>
           </div>
 
           {/* Dropped By Section - Moved here */}
-          {encounters.length > 0 && (
+          {encounters.length > 0 ? (
             <div className="bg-gray-800/50 rounded-lg p-4">
               <h2 className="text-xl font-bold text-white mb-3">Dropped By</h2>
               <div className="grid grid-cols-1 gap-2">
@@ -535,6 +533,11 @@ export default function CardDetailsContent({ card }: CardDetailsContentProps) {
                   </motion.button>
                 ))}
               </div>
+            </div>
+          ) : (
+            <div className="bg-gray-800/50 rounded-lg p-4">
+              <h2 className="text-xl font-bold text-white mb-3">Dropped By</h2>
+              <p className="text-gray-400">No drop information available</p>
             </div>
           )}
         </div>
