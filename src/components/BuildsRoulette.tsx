@@ -193,33 +193,48 @@ export default function BuildsRoulette() {
         return;
       }
 
-      console.log('Checking access for user:', user.uid);
+      console.log('🔍 Checking access for user:', user.uid);
       const userRef = doc(db, 'users', user.uid);
       
       try {
         const userDoc = await getDoc(userRef);
-        console.log('User doc exists:', userDoc.exists());
-        console.log('User doc data:', userDoc.data());
+        console.log('📄 User doc:', userDoc.data());
         
         if (userDoc.exists() && userDoc.data().hasBuildsRouletteAccess) {
-          console.log('User has access, setting hasAccess to true');
+          console.log('✅ User has access, enabling roulette');
           setHasAccess(true);
         } else if (searchParams.get('success')) {
-          console.log('Payment success, checking again in 2 seconds');
-          setTimeout(async () => {
+          console.log('💳 Payment success detected, waiting for webhook...');
+          
+          // Poll a few times for the access update
+          let attempts = 0;
+          const maxAttempts = 5;
+          
+          const pollAccess = async () => {
+            if (attempts >= maxAttempts) {
+              console.log('❌ Max polling attempts reached');
+              toast.error('Access update taking longer than expected. Please refresh the page.');
+              return;
+            }
+
             const refreshedDoc = await getDoc(userRef);
-            console.log('Refreshed doc data:', refreshedDoc.data());
+            console.log(`🔄 Polling attempt ${attempts + 1}:`, refreshedDoc.data());
+            
             if (refreshedDoc.exists() && refreshedDoc.data().hasBuildsRouletteAccess) {
+              console.log('✨ Access confirmed!');
               setHasAccess(true);
               toast.success('Access unlocked! Enjoy Builds Roulette!');
             } else {
-              console.log('Still no access after payment');
-              toast.error('Something went wrong. Please contact support.');
+              attempts++;
+              setTimeout(pollAccess, 2000); // Try again in 2 seconds
             }
-          }, 2000);
+          };
+
+          pollAccess();
         }
       } catch (error) {
-        console.error('Error checking access:', error);
+        console.error('❌ Error checking access:', error);
+        toast.error('Error checking access. Please try refreshing.');
       }
     };
 
