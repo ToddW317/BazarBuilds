@@ -104,7 +104,7 @@ const itemToImageMapping: Record<string, string> = {
     "Cold Room": "/items/CF_M_PIG_ColdRoom_D.jpeg",
     "Microwave": "/items/CF_M_JUL_Microwave_D.jpeg",
     "Welding Torch": "/items/CF_M_DOO_WeldingTorch_D.jpeg",
-    "Scrap": "/items/CF_M_DOO_ScrapMetal_D.jpeg",
+    "Scrap": "/items/CF_S_ADV_Scrap_D.jpeg",
     "Hoverboard": "/items/CF_M_STE_Hoverboard_D.jpeg",
     "Gyro Gunsight": "/items/CF_M_STE_GyroGunsight_D.jpeg",
     "Pizza Cutter": "/items/CF_S_JUL_PizzaCutter_D.jpeg",

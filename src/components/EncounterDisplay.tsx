@@ -60,76 +60,46 @@ interface MonsterSkillData {
   Cooldown?: number;
 }
 
-// Update the Skill interface to match what SkillDisplay expects
+// Update the MonsterSkill interface to match the data we receive
 interface MonsterSkill {
   Name: string;
-  Description: string;
-  Cooldown?: number;
+  SkillID: string;
+  Description?: string;
+  Tier?: string;
   Damage?: number;
   Shield?: number;
   Healing?: number;
   Duration?: number;
-  Tier: string;
-  Heroes: string[];
-  StartingTier: string;
-  ArtKey: string;
-  Tooltips: string[];
-  Attributes: {
-    BuyPrice?: number;
-    DamageAmount?: number;
-    ShieldAmount?: number;
-    HealAmount?: number;
-    CooldownMax?: number;
-    Duration?: number;
-    [key: string]: any;
-  };
-  AbilityIds: string[];
+  Cooldown?: number;
 }
 
-// Update the OutJsonSkill interface to better match your data
-interface OutJsonSkill {
-  Heroes: string[];
-  StartingTier: string;
-  Tiers: {
-    [key: string]: {
-      AbilityIds: string[];
-      Attributes: {
-        BuyPrice?: number;
-        DamageAmount?: number;
-        ShieldAmount?: number;
-        HealAmount?: number;
-        CooldownMax?: number;
-        Duration?: number;
-        Multicast?: number;
-        [key: string]: any;
-      };
-      AuraIds: string[];
-      TooltipIds: number[];
-      Tooltips: string[];
-    };
-  };
-  InternalID: string;
-  Name: string;
-  ArtKey: string;
-  [key: string]: any;
-}
-
-// Add index signature to encounterData.skills
+// Update the SkillsData interface to better match out.json structure
 interface SkillsData {
-  [key: string]: OutJsonSkill;
-}
-
-interface TierStats {
-  tier: string;
-  buyPrice?: number;
-  sellPrice?: number;
-  [key: string]: any;
-}
-
-interface ItemData {
-  id: string;
-  name: string;
-  [key: string]: any;
+  [key: string]: {
+    Heroes: string[];
+    StartingTier: string;
+    Tiers: {
+      [key: string]: {
+        AbilityIds: string[];
+        Attributes: {
+          [key: string]: any;
+          BuyPrice?: number;
+          DamageAmount?: number;
+          ShieldAmount?: number;
+          HealAmount?: number;
+          CooldownMax?: number;
+          Duration?: number;
+          Multicast?: number;
+        };
+        AuraIds: string[];
+        TooltipIds: number[];
+        Tooltips: string[];
+      };
+    };
+    InternalID: string;
+    Name: string;
+    ArtKey: string;
+  };
 }
 
 // Update the mapTierData function
@@ -176,16 +146,34 @@ const mapTierData = (tierStats: TierStats, item: ItemData) => {
   };
 };
 
-const mapMonsterSkillToSkillFormat = (monsterSkill: MonsterSkillData): Skill => {
-  const skillData = (encounterData.skills as SkillsData)[monsterSkill.SkillID];
+// Update the mapMonsterSkillToSkillFormat function
+const mapMonsterSkillToSkillFormat = (monsterSkill: MonsterSkill): Skill => {
+  const skillData = (encounterData.skills as unknown as SkillsData)[monsterSkill.SkillID];
   const tier = monsterSkill.Tier || 'Gold';
   const tierData = skillData?.Tiers[tier];
+
+  // Get all tooltips, including both direct tooltips and any that include "tooltip" in the key
+  const tooltips = [
+    ...(tierData?.Tooltips || []),
+    ...Object.entries(tierData || {})
+      .filter(([key, value]) => 
+        key.toLowerCase().includes('tooltip') && 
+        Array.isArray(value) &&
+        key !== 'Tooltips' &&
+        key !== 'TooltipIds'
+      )
+      .flatMap(([_, tooltipArray]) => tooltipArray)
+  ].filter(tooltip => 
+    typeof tooltip === 'string' && 
+    tooltip.trim() !== ''
+  );
 
   return {
     id: monsterSkill.SkillID,
     name: monsterSkill.Name,
-    image: `/skills/Icon_Skill_${skillData?.ArtKey || monsterSkill.Name.replace(/\s+/g, '')}.png`,
-    description: monsterSkill.Description || tierData?.Tooltips?.[0] || '',
+    // Use the skillData.ArtKey directly without the "Icon_Skill_" prefix as it's already in the filename
+    image: skillData?.ArtKey ? `/skills/${skillData.ArtKey}.png` : '',
+    description: monsterSkill.Description || tooltips[0] || '',
     type: 'Active',
     heroes: skillData?.Heroes || [],
     unlockLevel: 1,
@@ -201,7 +189,7 @@ const mapMonsterSkillToSkillFormat = (monsterSkill: MonsterSkillData): Skill => 
           CooldownMax: monsterSkill.Cooldown || tierData?.Attributes?.CooldownMax,
           ...tierData?.Attributes
         },
-        Tooltips: tierData?.Tooltips || [monsterSkill.Description || ''],
+        Tooltips: tooltips,
         AbilityIds: tierData?.AbilityIds || []
       }
     },
@@ -226,7 +214,7 @@ export default function EncounterDisplay({ name, monster, isExpanded, onToggle }
               Level {monster.Level}
             </span>
             <span className="flex items-center gap-1.5 text-red-400">
-              <Shield className="w-4 h-4" />
+              <Heart className="w-4 h-4" />
               {monster.Health} HP
             </span>
             {monster.Skills?.length > 0 && (
@@ -243,14 +231,14 @@ export default function EncounterDisplay({ name, monster, isExpanded, onToggle }
       </button>
 
       {isExpanded && (
-        <div className="p-6 border-t border-gray-700">
+        <div className="p-6 border-t border-gray-700 space-y-8">
           {/* Monster Skills */}
           {monster.Skills?.length > 0 && (
-            <div className="mb-6">
+            <div>
               <h3 className="text-lg font-semibold text-white mb-3">Skills</h3>
-              <div className="flex flex-wrap -mx-2">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {monster.Skills?.map((skill: MonsterSkill, index: number) => (
-                  <div key={`${name}-${monster.Level}-${skill.SkillID}-${index}`}>
+                  <div key={`${name}-${monster.Level}-${skill.SkillID}-${index}`} className="flex-none">
                     <SkillCard skill={mapMonsterSkillToSkillFormat(skill)} />
                   </div>
                 ))}
@@ -258,41 +246,44 @@ export default function EncounterDisplay({ name, monster, isExpanded, onToggle }
             </div>
           )}
 
-          {/* Monster Items */}
+          {/* Monster Items/Rewards */}
           {monster.Items?.length > 0 && (
             <div>
-              <h3 className="text-lg font-semibold text-white mb-3">Rewards</h3>
-              <div className="flex flex-wrap -mx-2">
-                {monster.Items.map((monsterItem: MonsterItem) => {
+              <h3 className="text-lg font-semibold text-white mb-3">
+                Possible Rewards ({monster.Items.length})
+              </h3>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+                {monster.Items.map((monsterItem: MonsterItem, index: number) => {
                   const item = items.find(i => i.id === monsterItem.ItemID);
                   if (!item) return null;
 
+                  // Create a more unique key using monster name, item ID and index
+                  const uniqueKey = `${name}-${monsterItem.ItemID}-${index}`;
+
                   return (
-                    <div key={monsterItem.ItemID} className="transform scale-[0.85] origin-top">
-                      <div className="relative">
-                        {monsterItem.DropRate && (
-                          <div className="absolute top-2 right-2 z-10 bg-yellow-500/90 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">
-                            {(monsterItem.DropRate * 100).toFixed(1)}% chance
-                          </div>
-                        )}
-                        <CardDisplay 
-                          item={{
-                            id: item.id,
-                            InternalName: item.name,
-                            Size: item.size,
-                            Heroes: item.heroes,
-                            StartingTier: item.startingTier,
-                            Tags: item.tags,
-                            ArtKey: item.image,
-                            images: [],
-                            Tiers: Object.entries(item.tiers).reduce((acc, [tier, stats]) => ({
-                              ...acc,
-                              [tier]: mapTierData({ ...stats, tier }, item)
-                            }), {})
-                          }}
-                          itemId={monsterItem.ItemID}
-                        />
-                      </div>
+                    <div key={uniqueKey} className="relative transform scale-90 origin-top-left">
+                      {monsterItem.DropRate && (
+                        <div className="absolute top-1 right-1 z-10 bg-yellow-500/90 text-white text-xs font-bold px-2 py-0.5 rounded-full shadow-lg">
+                          {(monsterItem.DropRate * 100).toFixed(1)}%
+                        </div>
+                      )}
+                      <CardDisplay 
+                        item={{
+                          id: item.id,
+                          InternalName: item.name,
+                          Size: item.size,
+                          Heroes: item.heroes,
+                          StartingTier: item.startingTier,
+                          Tags: item.tags,
+                          // Ensure image path is properly formatted - remove any special characters
+                          ArtKey: item.image?.replace(/[#]/g, ''),
+                          Tiers: Object.entries(item.tiers).reduce((acc, [tier, stats]) => ({
+                            ...acc,
+                            [tier]: mapTierData({ ...stats, tier }, item)
+                          }), {})
+                        }}
+                        itemId={monsterItem.ItemID}
+                      />
                     </div>
                   );
                 })}
