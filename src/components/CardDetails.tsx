@@ -1,43 +1,54 @@
-import { getItemEncounters, EncounterInfo } from '@/utils/encounterMapping'
-import { Sparkles } from 'lucide-react'
+import { getItemEncounters, EncounterInfo } from '@/utils/encounterMapping';
+import { Sparkles } from 'lucide-react';
+import { CompareButton } from './CompareButton';
 
-export default function CardDetails({ /* ... existing props ... */ }) {
-  // Add this near the top of the component
-  const itemEncounters = getItemEncounters()[itemId] || [];
+interface CardDetailsProps {
+  card: {
+    id: string;
+    type: 'item' | 'skill' | 'encounter';
+    name: string;
+    imageUrl?: string;
+    description?: string;
+    rarity?: string;
+  };
+  itemId?: string;
+}
+
+export default function CardDetails({ card, itemId }: CardDetailsProps) {
+  const itemEncounters = itemId ? getItemEncounters()[itemId] || [] : [];
 
   return (
-    <div>
-      {/* ... existing content ... */}
-
-      {/* Add this section where you want to display encounters */}
-      {itemEncounters.length > 0 && (
-        <div className="mt-6">
-          <h3 className="text-lg font-semibold text-white mb-3">Found in Encounters</h3>
-          <div className="space-y-2">
-            {itemEncounters.map((encounter: EncounterInfo, index: number) => (
-              <div 
-                key={`${encounter.name}-${index}`}
-                className="flex items-center justify-between bg-gray-700/50 rounded-lg px-4 py-2"
-              >
-                <div className="flex items-center gap-3">
-                  <span className="text-white">{encounter.name}</span>
-                  <span className="flex items-center gap-1.5 text-yellow-400 text-sm">
-                    <Sparkles className="w-4 h-4" />
-                    Level {encounter.level}
-                  </span>
-                </div>
-                {encounter.dropRate && (
-                  <span className="text-yellow-400 text-sm font-medium">
-                    {(encounter.dropRate * 100).toFixed(1)}% chance
-                  </span>
-                )}
-              </div>
-            ))}
+    <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-md p-4">
+      <div className="flex flex-col items-center">
+        {card.imageUrl && (
+          <img
+            src={card.imageUrl}
+            alt={card.name}
+            className="w-32 h-32 object-contain"
+          />
+        )}
+        <h2 className="text-xl font-bold mt-2">{card.name}</h2>
+        {card.rarity && (
+          <div className="flex items-center gap-1 mt-1">
+            <Sparkles className="w-4 h-4 text-yellow-500" />
+            <span className="text-sm">{card.rarity}</span>
           </div>
-        </div>
-      )}
+        )}
+        {card.description && (
+          <p className="text-sm text-gray-600 dark:text-gray-300 mt-2">
+            {card.description}
+          </p>
+        )}
+      </div>
 
-      {/* ... rest of existing content ... */}
+      <CompareButton
+        item={{
+          id: card.id,
+          type: card.type,
+          name: card.name,
+          imageUrl: card.imageUrl,
+        }}
+      />
     </div>
-  )
+  );
 } 

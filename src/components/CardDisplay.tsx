@@ -45,6 +45,7 @@ import {
 } from "@/components/ui/tooltip";
 import { ENCHANTMENTS } from './EnchantmentsDisplay';
 import type { EnchantmentType } from './EnchantmentsDisplay';
+import { CompareButton } from './CompareButton';
 
 interface CardDisplayProps {
   item: Item;
@@ -271,7 +272,7 @@ export default function CardDisplay({ item, itemId }: CardDisplayProps) {
   return (
     <Link href={`/cards/${itemId}`} className="block">
       <div className="bg-gray-800 rounded-lg overflow-hidden border border-gray-700 hover:border-blue-500/50 
-        transition-all duration-300 cursor-pointer h-full flex flex-col">
+        transition-all duration-300 cursor-pointer h-full flex flex-col relative">
         {/* Header with Image */}
         <div className="relative">
           <div className="relative aspect-[16/12] w-full bg-gray-700">
@@ -515,6 +516,24 @@ export default function CardDisplay({ item, itemId }: CardDisplayProps) {
             </div>
           )}
         </div>
+
+        {/* Add CompareButton */}
+        <CompareButton
+          item={{
+            id: itemId,
+            type: 'item',
+            name: item.InternalName,
+            imageUrl: getItemImagePath(item),
+            attributes: currentTierData.Attributes,
+            tooltips: getAllTooltips(currentTierData),
+            size: item.Size,
+            heroes: item.Heroes,
+            tags: item.Tags,
+            enchantments: item.Enchantments,
+            tiers: item.Tiers,
+            startingTier: item.StartingTier,
+          }}
+        />
       </div>
     </Link>
   );

@@ -5,6 +5,7 @@ import Navbar from '@/components/Navbar'
 import { AuthProvider } from '@/contexts/AuthContext'
 import Footer from '@/components/Footer'
 import GoogleAd from '@/components/GoogleAd'
+import { CompareSidebar } from '@/components/CompareSidebar'
 
 
 const inter = Inter({ subsets: ['latin'] })
@@ -36,6 +37,7 @@ export default function RootLayout({
               {children}
             </main>
             <Footer />
+            <CompareSidebar />
           </AuthProvider>
       </body>
     </html>
