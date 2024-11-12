@@ -13,6 +13,7 @@ import { useSearchParams } from 'next/navigation';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import toast from 'react-hot-toast';
+import { PayPalScriptProvider, PayPalButtons } from '@paypal/react-paypal-js';
 
 interface Build {
   hero: string | null;
@@ -452,12 +453,93 @@ export default function BuildsRoulette() {
             <br />
             Your contribution helps keep our servers running and tools free for everyone.
           </p>
-          <button
-            onClick={handleDonateClick}
-            className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-8 py-4 text-xl rounded-full shadow-lg hover:scale-105 active:scale-95 transition-transform"
-          >
-            Donate $1 to Unlock
-          </button>
+          
+          <div className="flex flex-col items-center gap-6 max-w-md mx-auto">
+            {/* Payment method selection */}
+            <div className="grid grid-cols-2 gap-4 w-full">
+              {/* Credit Card Option */}
+              <motion.button
+                onClick={handleDonateClick}
+                className="flex flex-col items-center gap-2 p-4 bg-white/5 rounded-xl hover:bg-white/10 transition-colors"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                <svg className="w-8 h-8 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                </svg>
+                <span className="text-white font-medium">Credit Card</span>
+                <span className="text-xs text-gray-400">Powered by Stripe</span>
+              </motion.button>
+
+              {/* PayPal Option */}
+              <div className="relative">
+                <PayPalScriptProvider options={{ 
+                  clientId: process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID!,
+                  currency: "USD"
+                }}>
+                  <div className="h-full">
+                    <PayPalButtons 
+                      style={{ 
+                        layout: "vertical",
+                        shape: "rect",
+                        label: "donate"
+                      }}
+                      createOrder={(data, actions) => {
+                        return actions.order.create({
+                          intent: "CAPTURE",
+                          purchase_units: [{
+                            amount: {
+                              currency_code: "USD",
+                              value: "1.00",
+                            },
+                            custom_id: user.uid
+                          }]
+                        });
+                      }}
+                      onApprove={async (data, actions) => {
+                        if (!actions.order) return;
+                        
+                        try {
+                          // Capture the order
+                          const order = await actions.order.capture();
+                          console.log('PayPal order captured:', order.id);
+
+                          // Call our success endpoint
+                          const response = await fetch('/api/paypal-success', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                              orderId: order.id,
+                              userId: user.uid,
+                            }),
+                          });
+
+                          if (!response.ok) {
+                            throw new Error('Failed to process payment');
+                          }
+
+                          // Show success message and redirect
+                          toast.success('Payment successful! Setting up your access...');
+                          window.location.href = '/builds-roulette?success=true';
+                        } catch (error) {
+                          console.error('PayPal error:', error);
+                          toast.error('Something went wrong. Please try again.');
+                        }
+                      }}
+                      onError={(err) => {
+                        console.error('PayPal error:', err);
+                        toast.error('Payment failed. Please try again.');
+                      }}
+                    />
+                  </div>
+                </PayPalScriptProvider>
+              </div>
+            </div>
+
+            <p className="text-xs text-gray-500">
+              Choose your preferred payment method • Secure payment processing
+            </p>
+          </div>
         </div>
       ) : (
         // Your existing BuildsRoulette content goes here
