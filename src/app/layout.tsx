@@ -11,9 +11,7 @@ import { CompareSidebar } from '@/components/CompareSidebar'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  other: {
-    'admaven-placement': 'Bqdr4rdgE',
-  },
+  // Removed admaven metadata
 }
 
 export default function RootLayout({
@@ -24,8 +22,6 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-      <script data-cfasync="false" src="/sw.js"></script>
-      <script data-cfasync="false" src="//dcbbwymp1bhlf.cloudfront.net/?wbbcd=1118629"></script>
       </head>
       <body className={`${inter.className} flex flex-col min-h-screen`}>
           <AuthProvider>
