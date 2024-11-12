@@ -25,10 +25,7 @@ export default function RootLayout({
     <html lang="en">
       <head>
       <script data-cfasync="false" src="/sw.js"></script>
-        <script 
-          data-cfasync="false" 
-          src="//dcbbwymp1bhlf.cloudfront.net/?wbbcd=1118629"
-        />
+      <script data-cfasync="false" src="//dcbbwymp1bhlf.cloudfront.net/?wbbcd=1118629"></script>
       </head>
       <body className={`${inter.className} flex flex-col min-h-screen`}>
           <AuthProvider>
