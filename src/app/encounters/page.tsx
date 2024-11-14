@@ -30,7 +30,7 @@ export default function EncountersPage() {
   // Initialize and sort encounters by level, excluding test encounters
   useEffect(() => {
     const sortedEncounters = Object.entries(encounterData.monsters || {})
-      .filter(([name]) => !isTestEncounter(name))
+      .filter(([_, monster]) => !isTestEncounter(monster.name))
       .sort((a, b) => (a[1].Level || 0) - (b[1].Level || 0));
     setFilteredEncounters(sortedEncounters);
   }, []);
@@ -55,7 +55,7 @@ export default function EncountersPage() {
     if (!value) {
       // If no search, show all encounters sorted by level (excluding test encounters)
       const sortedEncounters = Object.entries(encounterData.monsters || {})
-        .filter(([name]) => !isTestEncounter(name))
+        .filter(([_, monster]) => !isTestEncounter(monster.name))
         .sort((a, b) => (a[1].Level || 0) - (b[1].Level || 0));
       setFilteredEncounters(sortedEncounters);
       return;
@@ -63,8 +63,9 @@ export default function EncountersPage() {
 
     // Filter and maintain sort order
     const filtered = Object.entries(encounterData.monsters || {})
-      .filter(([name]) => 
-        !isTestEncounter(name) && name.toLowerCase().includes(value.toLowerCase())
+      .filter(([_, monster]) => 
+        !isTestEncounter(monster.name) && 
+        monster.name.toLowerCase().includes(value.toLowerCase())
       )
       .sort((a, b) => (a[1].Level || 0) - (b[1].Level || 0));
     
@@ -83,13 +84,13 @@ export default function EncountersPage() {
         </div>
         
         <div className="space-y-4">
-          {filteredEncounters.map(([name, monster]) => (
+          {filteredEncounters.map(([id, monster]) => (
             <EncounterDisplay
-              key={name}
-              name={name}
+              key={id}
+              name={monster.name}
               monster={monster}
-              isExpanded={name === expandedEncounter}
-              onToggle={() => setExpandedEncounter(name === expandedEncounter ? '' : name)}
+              isExpanded={monster.name === expandedEncounter}
+              onToggle={() => setExpandedEncounter(monster.name === expandedEncounter ? '' : monster.name)}
             />
           ))}
           
