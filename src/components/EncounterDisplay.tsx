@@ -82,7 +82,7 @@ const findItemById = (itemId: string): Item | undefined => {
 
     return {
       id: itemId,
-      InternalName: itemData.InternalName || '',
+      InternalName: itemData.Name || itemData.InternalName || '',
       Size: itemData.Size || 'Small',
       Heroes: itemData.Heroes || [],
       Tags: itemData.Tags || [],
@@ -195,13 +195,13 @@ export default function EncounterDisplay({ name, monster, isExpanded, onToggle }
               </h3>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
                 {monster.Items.map((monsterItem, index) => {
-                  const item = findItemById(monsterItem.ItemID);
+                  const item = findItemById(monsterItem.ItemID || monsterItem.Name);
                   if (!item) return null;
 
                   const dropRate = 1 / monster.Items!.length;
 
                   return (
-                    <div key={`${monsterItem.ItemID}-${index}`} className="group relative">
+                    <div key={`${monsterItem.ItemID || monsterItem.Name}-${index}`} className="group relative">
                       <div className="absolute top-2 right-2 z-10 bg-black/75 text-yellow-400 
                         text-xs font-bold px-2 py-1 rounded-full shadow-lg backdrop-blur-sm">
                         {(dropRate * 100).toFixed(1)}%
@@ -215,7 +215,7 @@ export default function EncounterDisplay({ name, monster, isExpanded, onToggle }
                       <div className="transform transition-transform group-hover:scale-105">
                         <CardDisplay 
                           item={item}
-                          itemId={monsterItem.ItemID}
+                          itemId={monsterItem.ItemID || monsterItem.Name}
                         />
                       </div>
                     </div>

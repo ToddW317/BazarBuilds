@@ -57,8 +57,6 @@ type ItemTag = {
 const getEncounterInfo = (itemId: string): EncounterInfo[] => {
   const encounters: EncounterInfo[] = [];
   
-  console.log('Getting encounter info for itemId:', itemId);
-  
   if (!encounterData?.monsters) {
     console.warn('No monsters data available');
     return encounters;
@@ -66,33 +64,30 @@ const getEncounterInfo = (itemId: string): EncounterInfo[] => {
   
   try {
     // Look through all monsters
-    Object.entries(encounterData.monsters).forEach(([monsterName, monster]: [string, any]) => {
+    Object.entries(encounterData.monsters).forEach(([_, monster]: [string, any]) => {
       // Check if the monster has Items array
       if (monster?.Items && Array.isArray(monster.Items)) {
-        // Look for our item in the monster's Items
+        // Look for our item in the monster's Items using both ItemID and Name
         const hasItem = monster.Items.some((item: any) => 
-          item.Name === itemId || item.ItemID === itemId
+          item.ItemID === itemId || 
+          item.Name === itemId ||
+          (encounterData.items[item.ItemID]?.Name === itemId) ||
+          (encounterData.items[item.Name]?.Name === itemId)
         );
         
         if (hasItem) {
-          // Calculate drop rate based on number of items
-          // Each item has an equal chance of dropping
           const dropRate = 1 / monster.Items.length;
           
           encounters.push({
-            name: monsterName,
-            image: `/encounters/${monsterName.toLowerCase().replace(/\s+/g, '_')}.png`,
+            name: monster.name,
+            image: `/encounters/${monster.name.toLowerCase().replace(/\s+/g, '_')}.png`,
             dropRate: dropRate
           });
         }
       }
     });
-
-    console.log('Found encounters:', encounters);
   } catch (error) {
     console.error('Error processing monster data:', error);
-    console.error('ItemId:', itemId);
-    console.error('Error details:', error);
   }
   
   return encounters;
@@ -340,7 +335,9 @@ export default function CardDetailsContent({ card }: CardDetailsContentProps) {
           transition={{ duration: 0.5, ease: "easeOut" }}
           className="relative w-full max-w-[400px] mx-auto space-y-4"
         >
-          <h1 className="text-2xl font-bold text-white mb-4">{card.InternalName}</h1>
+          <h1 className="text-2xl font-bold text-white mb-4">
+            {card.Name || card.InternalName}
+          </h1>
           <motion.div 
             className="relative aspect-[4/3] bg-gray-700 rounded-lg overflow-hidden shadow-xl hover:shadow-2xl transition-shadow duration-300"
             whileHover={{ 
