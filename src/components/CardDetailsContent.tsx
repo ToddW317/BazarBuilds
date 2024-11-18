@@ -19,6 +19,12 @@ import {
   Home,
   Droplet,
   Swords,
+  Shield,
+  Heart,
+  Skull,
+  Flame,
+  Snowflake,
+  CircleDot,
 } from 'lucide-react';
 import { getItemImagePath } from '@/utils/imageUtils';
 import PlaceholderImage from '@/components/PlaceholderImage';
@@ -198,6 +204,40 @@ const getItemTags = (item: Item): ItemTag[] => {
   return tags;
 };
 
+const getCombatValues = (attributes: Record<string, any>) => {
+  if (!attributes) return [];
+  
+  const combatAttributes = {
+    ShieldApplyAmount: { label: 'Shield', color: 'text-yellow-400' },
+    Shield: { label: 'Shield', color: 'text-yellow-400' },
+    DamageAmount: { label: 'Damage', color: 'text-red-400' },
+    Damage: { label: 'Damage', color: 'text-red-400' },
+    HealAmount: { label: 'Heal', color: 'text-green-400' },
+    Heal: { label: 'Heal', color: 'text-green-400' },
+    PoisonAmount: { label: 'Poison', color: 'text-purple-400' },
+    Poison: { label: 'Poison', color: 'text-purple-400' },
+    BurnAmount: { label: 'Burn', color: 'text-orange-400' },
+    Burn: { label: 'Burn', color: 'text-orange-400' },
+    FreezeAmount: { label: 'Freeze', color: 'text-cyan-400' },
+    Freeze: { label: 'Freeze', color: 'text-cyan-400' },
+    AmmoMax: { label: 'Ammo', color: 'text-blue-400' }
+  };
+
+  const values = [];
+  
+  for (const [key, config] of Object.entries(combatAttributes)) {
+    const value = attributes[key];
+    if (value && value !== 0) {
+      values.push({
+        value,
+        ...config
+      });
+    }
+  }
+
+  return values;
+};
+
 export default function CardDetailsContent({ card }: CardDetailsContentProps) {
   console.log('encounterData:', encounterData);
   console.log('itemId:', card.InternalName);
@@ -374,31 +414,31 @@ export default function CardDetailsContent({ card }: CardDetailsContentProps) {
                 <h2 className="text-xl font-bold text-white">Enchantments</h2>
               </div>
               <div className="grid grid-cols-2 gap-2">
-                {Object.entries(card.Enchantments).map(([enchantName]) => {
-                  const enchantData = ENCHANTMENTS[enchantName];
-                  if (!enchantData) return null;
+                {Object.entries(card.Enchantments).map(([enchantName, enchantData]) => {
+                  const baseEnchant = ENCHANTMENTS[enchantName];
+                  if (!baseEnchant) return null;
                   
                   return (
                     <div 
                       key={enchantName}
                       className="flex items-start gap-2 p-2 rounded border group hover:brightness-110 transition-all"
                       style={{
-                        backgroundColor: enchantData.bgColor,
-                        borderColor: enchantData.borderColor
+                        backgroundColor: baseEnchant.bgColor,
+                        borderColor: baseEnchant.borderColor
                       }}
                     >
-                      <enchantData.Icon 
-                        style={{ color: enchantData.color }} 
+                      <baseEnchant.Icon 
+                        style={{ color: baseEnchant.color }} 
                         className="w-4 h-4 flex-shrink-0 mt-1" 
                       />
                       <div className="flex-1 min-w-0">
                         <span 
-                          style={{ color: enchantData.color }} 
+                          style={{ color: baseEnchant.color }} 
                           className="font-medium block text-sm"
                         >
-                          {enchantData.Name}
+                          {enchantData.Name || baseEnchant.Name}
                         </span>
-                        {enchantData.Tooltips.map((tooltip: string, i: number) => (
+                        {enchantData.Tooltips?.map((tooltip: string, i: number) => (
                           <span key={i} className="text-xs text-gray-300 block leading-snug">
                             {tooltip}
                           </span>
@@ -430,6 +470,57 @@ export default function CardDetailsContent({ card }: CardDetailsContentProps) {
               </button>
             ))}
           </div>
+
+          {/* Combat Values Section */}
+          {(() => {
+            const combatValues = getCombatValues(currentTierData.Attributes || {});
+            if (combatValues.length === 0) return null;
+
+            return (
+              <div className="bg-gray-800/50 rounded-lg p-4">
+                <h2 className="text-xl font-bold text-white mb-3">Combat Values</h2>
+                <div className="flex flex-wrap gap-2">
+                  {combatValues.map((value, index) => (
+                    <div 
+                      key={`${value.label}-${index}`}
+                      className="bg-gray-900/75 px-4 py-2 rounded-lg shadow-lg backdrop-blur-sm 
+                        border border-gray-700/50 flex items-center gap-2"
+                    >
+                      {(() => {
+                        // Add icons based on the label
+                        switch (value.label) {
+                          case 'Shield':
+                            return <Shield className={`w-5 h-5 ${value.color}`} />;
+                          case 'Damage':
+                            return <Swords className={`w-5 h-5 ${value.color}`} />;
+                          case 'Heal':
+                            return <Heart className={`w-5 h-5 ${value.color}`} />;
+                          case 'Poison':
+                            return <Skull className={`w-5 h-5 ${value.color}`} />;
+                          case 'Burn':
+                            return <Flame className={`w-5 h-5 ${value.color}`} />;
+                          case 'Freeze':
+                            return <Snowflake className={`w-5 h-5 ${value.color}`} />;
+                          case 'Ammo':
+                            return <CircleDot className={`w-5 h-5 ${value.color}`} />;
+                          default:
+                            return null;
+                        }
+                      })()}
+                      <div className="flex flex-col">
+                        <span className={`font-bold ${value.color}`}>
+                          {value.value}
+                        </span>
+                        <span className="text-xs text-gray-400">
+                          {value.label}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })()}
 
           {/* Tags Section */}
           <div className="bg-gray-800/50 rounded-lg p-4">
@@ -472,15 +563,33 @@ export default function CardDetailsContent({ card }: CardDetailsContentProps) {
             <div className="grid grid-cols-2 gap-3">
               {Object.entries(currentTierData.Attributes || {})
                 .filter(([key, value]) => shouldShowAttribute(key, value))
+                .sort((a, b) => {
+                  // Sort order: Combat stats first, then ammo, then other stats
+                  const combatStats = ['Damage', 'Shield', 'Heal', 'Poison', 'Burn', 'Freeze'];
+                  const aIsCombat = combatStats.some(stat => a[0].includes(stat));
+                  const bIsCombat = combatStats.some(stat => b[0].includes(stat));
+                  const aIsAmmo = a[0].includes('Ammo');
+                  const bIsAmmo = b[0].includes('Ammo');
+                  
+                  if (aIsCombat && !bIsCombat) return -1;
+                  if (!aIsCombat && bIsCombat) return 1;
+                  if (aIsAmmo && !bIsAmmo) return -1;
+                  if (!aIsAmmo && bIsAmmo) return 1;
+                  return 0;
+                })
                 .map(([key, value]) => {
                   const icon = getAttributeIcon(key);
                   if (!icon) return null;
 
                   return (
-                    <div key={key} className="flex items-center space-x-2">
+                    <div key={key} className="flex items-center gap-2 bg-gray-700/30 rounded p-2">
                       {icon}
-                      <span className="text-gray-400">{getAttributeLabel(key)}:</span>
-                      <span className="text-white">{formatAttributeValue(key, value)}</span>
+                      <span className="text-sm text-gray-400">
+                        {getAttributeLabel(key)}:
+                      </span>
+                      <span className="text-white">
+                        {formatAttributeValue(key, value)}
+                      </span>
                     </div>
                   );
                 })}

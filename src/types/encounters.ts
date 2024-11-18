@@ -30,10 +30,12 @@ export interface Item {
       Enchantments?: string[];
     };
   };
-  StartingTier?: string;
-  Enchant?: string;
+  StartingTier: string;
+  ArtKey: string;
   Enchantments?: {
-    [key: string]: Enchantment;
+    [key: string]: {
+      Name: string;
+      Tooltips: string[];
+    };
   };
-  ArtKey?: string;
 }

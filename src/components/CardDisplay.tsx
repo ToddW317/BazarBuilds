@@ -179,6 +179,41 @@ const getItemTags = (item: Item): ItemTag[] => {
   return tags;
 };
 
+// Update the getCombatValues (plural) function to return multiple values
+const getCombatValues = (attributes: Record<string, any>) => {
+  if (!attributes) return [];
+  
+  const combatAttributes = {
+    ShieldApplyAmount: { label: 'Shield', color: 'text-yellow-400' },
+    Shield: { label: 'Shield', color: 'text-yellow-400' },
+    DamageAmount: { label: 'Damage', color: 'text-red-400' },
+    Damage: { label: 'Damage', color: 'text-red-400' },
+    HealAmount: { label: 'Heal', color: 'text-green-400' },
+    Heal: { label: 'Heal', color: 'text-green-400' },
+    PoisonAmount: { label: 'Poison', color: 'text-purple-400' },
+    Poison: { label: 'Poison', color: 'text-purple-400' },
+    BurnAmount: { label: 'Burn', color: 'text-orange-400' },
+    Burn: { label: 'Burn', color: 'text-orange-400' },
+    FreezeAmount: { label: 'Freeze', color: 'text-cyan-400' },
+    Freeze: { label: 'Freeze', color: 'text-cyan-400' },
+    AmmoMax: { label: 'Ammo', color: 'text-blue-400' }
+  };
+
+  const values = [];
+  
+  for (const [key, config] of Object.entries(combatAttributes)) {
+    const value = attributes[key];
+    if (value && value !== 0) {
+      values.push({
+        value,
+        ...config
+      });
+    }
+  }
+
+  return values;
+};
+
 export default function CardDisplay({ item, itemId }: CardDisplayProps) {
   const [selectedTier, setSelectedTier] = useState<string>(item.StartingTier || 'Bronze');
   const [imageError, setImageError] = useState(false);
@@ -298,6 +333,23 @@ export default function CardDisplay({ item, itemId }: CardDisplayProps) {
               />
             )}
             {isLoading && <PlaceholderImage />}
+            
+            {/* Combat Value Badges */}
+            <div className="absolute bottom-2 right-2 z-10 flex flex-col gap-1 items-end">
+              {(() => {
+                const combatValues = getCombatValues(item.Tiers[selectedTier]?.Attributes);
+                return combatValues.map((value, index) => (
+                  <div 
+                    key={`${value.label}-${index}`}
+                    className="bg-black/75 text-xs font-bold px-2 py-1 rounded-full shadow-lg backdrop-blur-sm"
+                  >
+                    <span className={value.color}>
+                      {value.label} {value.value}
+                    </span>
+                  </div>
+                ));
+              })()}
+            </div>
             
             {/* Card Name Overlay */}
             <div className="absolute bottom-0 left-0 right-0 p-3">
@@ -432,31 +484,31 @@ export default function CardDisplay({ item, itemId }: CardDisplayProps) {
                     className="bg-gray-800/95 border border-gray-700 p-2 w-[500px]"
                   >
                     <div className="grid grid-cols-2 gap-2">
-                      {Object.entries(item.Enchantments).map(([enchantName]) => {
-                        const enchantData = ENCHANTMENTS[enchantName];
-                        if (!enchantData) return null;
+                      {Object.entries(item.Enchantments).map(([enchantName, enchantData]) => {
+                        const baseEnchant = ENCHANTMENTS[enchantName];
+                        if (!baseEnchant) return null;
                         
                         return (
                           <div 
                             key={enchantName}
                             className="flex items-start gap-2 p-2 rounded border"
                             style={{
-                              backgroundColor: enchantData.bgColor,
-                              borderColor: enchantData.borderColor
+                              backgroundColor: baseEnchant.bgColor,
+                              borderColor: baseEnchant.borderColor
                             }}
                           >
-                            <enchantData.Icon 
-                              style={{ color: enchantData.color }} 
+                            <baseEnchant.Icon 
+                              style={{ color: baseEnchant.color }} 
                               className="w-4 h-4 flex-shrink-0 mt-0.5" 
                             />
                             <div className="flex-1">
                               <span 
-                                style={{ color: enchantData.color }} 
+                                style={{ color: baseEnchant.color }} 
                                 className="font-medium block text-sm"
                               >
                                 {enchantData.Name}
                               </span>
-                              {enchantData.Tooltips.map((tooltip: string, i: number) => (
+                              {enchantData.Tooltips?.map((tooltip: string, i: number) => (
                                 <span key={i} className="text-xs text-gray-300 block">
                                   {tooltip}
                                 </span>
